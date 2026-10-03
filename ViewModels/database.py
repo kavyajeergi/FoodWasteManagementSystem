@@ -1,4 +1,4 @@
-import sqllite3
+import sqlite3
 
 DATABASE_NAME = "food_inventory.db"
 

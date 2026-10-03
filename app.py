@@ -1,9 +1,10 @@
+import pandas as pd
 import streamlit as st
-from ViewModels.database import create_table
-from ViewModels.validation import *
+
+from database import create_table
 from Models.foodmodel import FoodItem
 from ViewModels.inventory import *
-import pandas as pd
+from ViewModels.validation import *
 
 st.set_page_config(
     page_title="Food Waste Management System", page_icon="🍽️", layout="wide"
@@ -166,7 +167,7 @@ if menu == "Update Quantity":
                                     purchase_date=item[5],
                                     expiry_date=item[6],
                                 )
-                        )
+                            )
                             st.success(
                                 f"Quantity updated successfully. New quantity: {new_quantity}"
                             )
