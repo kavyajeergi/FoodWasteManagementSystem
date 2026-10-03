@@ -121,7 +121,9 @@ if menu == "Search Item":
                         "Expiry Date",
                     ],
                 )
+
                 st.dataframe(df_results, use_container_width=True)
+
             else:
                 st.warning("No items found matching your search.")
         else:
@@ -152,23 +154,21 @@ if menu == "Update Quantity":
                         new_quantity = current_quantity - amount
                         if new_quantity < 0:
                             st.error("Quantity cannot be negative.")
-                            return
-
-                    # Update the quantity in the database
-                    update_food_item(
-                        FoodItem(
-                            id=item_id,
-                            name=item[1],
-                            category=item[2],
-                            quantity=new_quantity,
-                            unit=item[4],
-                            purchase_date=item[5],
-                            expiry_date=item[6],
+                        else:
+                            # Update the quantity in the database
+                            update_food_item(
+                                FoodItem(
+                                    id=item_id,
+                                    name=item[1],
+                                    category=item[2],
+                                    quantity=new_quantity,
+                                    unit=item[4],
+                                    purchase_date=item[5],
+                                    expiry_date=item[6],
+                                )
                         )
-                    )
-
-                    st.success(
-                        f"Quantity updated successfully. New quantity: {new_quantity}"
-                    )
+                            st.success(
+                                f"Quantity updated successfully. New quantity: {new_quantity}"
+                            )
             except ValueError as e:
                 st.error(str(e))
