@@ -1,5 +1,6 @@
 from datetime import date
 from ViewModels.database import get_connection
+from Models.foodmodel import FoodItem
 
 
 def calculate_status(expiry_date: date) -> str:
@@ -81,7 +82,7 @@ def get_items_by_name_or_category(search_term: str):
 
     cursor = conn.cursor()
 
-    cursor.excute(
+    cursor.execute(
         """
         SELECT
             id,
@@ -147,8 +148,7 @@ def update_food_item(item: FoodItem):
         (item.quantity, item.id),
     )
 
-    rows = cursor.fetchall()
-
+    conn.commit()
     conn.close()
 
-    return rows
+    return True
