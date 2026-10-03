@@ -1,5 +1,5 @@
 from datetime import date
-from database import get_connection
+from ViewModels.database import get_connection
 
 
 def calculate_status(expiry_date: date) -> str:
