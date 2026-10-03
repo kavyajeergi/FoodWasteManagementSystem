@@ -3,8 +3,8 @@ import streamlit as st
 
 from ViewModels.database import create_table
 from Models.foodmodel import FoodItem
-from ViewModels.inventory import *
-from ViewModels.validation import *
+from ViewModels.inventory import calculate_status, add_food_item, get_all_items, get_items_by_name_or_category, get_item_by_id, update_food_item
+from ViewModels.validation import validate_datetime, validate_quantity, validate_expiry_date
 
 st.set_page_config(
     page_title="Food Waste Management System", page_icon="🍽️", layout="wide"
