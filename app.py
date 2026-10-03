@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from database import create_table
+from ViewModels.database import create_table
 from Models.foodmodel import FoodItem
 from ViewModels.inventory import *
 from ViewModels.validation import *
