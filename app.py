@@ -144,6 +144,14 @@ if menu == "Update Quantity":
             try:
                 # Fetch current quantity from the database
                 item = get_item_by_id(item_id)
+                purchase_date = datetime.strptime(
+                    item[5], "%Y-%m-%d"
+                ).date()
+
+                expiry_date = datetime.strptime(
+                    item[6], "%Y-%m-%d"
+                ).date()
+                
                 if not item:
                     st.error("Item not found.")
                 else:
@@ -173,3 +181,10 @@ if menu == "Update Quantity":
                             )
             except ValueError as e:
                 st.error(str(e))
+
+            except Exception as e:
+                st.error(f"Database error: {e}")
+
+
+    
+    
