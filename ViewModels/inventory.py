@@ -12,8 +12,8 @@ class ExpiryStatus(str, Enum):
 
 
 class ActionStatus(str, Enum):
-    CONSUMED = "CONSUMED"
-    DISCARDED = "DISCARDED"
+    MarkasWaste = "Mark as Waste"
+    MarkasDonation = "Mark as Donation"
 
 
 def calculate_status(expiry_date: date) -> ExpiryStatus:
@@ -162,11 +162,7 @@ def delete_food_item(item_id: str):
     return True
 
 
-def save_item_actionstatus(
-    item_name: str,
-    action: ActionStatus,
-    action_date: date
-):
+def save_item_actionstatus(item_name: str, action: ActionStatus, action_date: date):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -179,11 +175,7 @@ def save_item_actionstatus(
         )
         VALUES (?, ?, ?)
         """,
-        (
-            item_name,
-            action.value,
-            action_date.isoformat()
-        ),
+        (item_name, action.value, action_date.isoformat()),
     )
 
     conn.commit()

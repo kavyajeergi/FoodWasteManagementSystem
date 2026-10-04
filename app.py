@@ -14,7 +14,6 @@ from ViewModels.inventory import (
     ExpiryStatus,
     save_item_actionstatus,
     get_item_actions,
-    ActionStatus,
 )
 from ViewModels.validation import (
     validate_datetime,
@@ -185,8 +184,8 @@ if menu == "Update Quantity":
                                     category=item[2],
                                     quantity=new_quantity,
                                     unit=item[4],
-                                    purchase_date=item[5],
-                                    expiry_date=item[6],
+                                    purchase_date=purchase_date,
+                                    expiry_date=expiry_date,
                                 )
                             )
                             st.success(
@@ -314,6 +313,8 @@ if menu == "Waste / Donation":
 
         action = st.selectbox("Action", ["Mark as Waste", "Mark as Donation"])
 
+        action_status = ActionStatus(action)
+
         if st.button("Submit"):
             if item_id:
                 try:
@@ -322,7 +323,9 @@ if menu == "Waste / Donation":
                     if not item:
                         st.error("Item not found.")
                     else:
-                        save_item_actionstatus(item, action, datetime.now().date())
+                        save_item_actionstatus(
+                            item, action_status, datetime.now().date()
+                        )
                         st.success(
                             f"Food item with ID '{item_id}' marked as '{action}'."
                         )
