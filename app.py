@@ -50,6 +50,272 @@ menu = st.sidebar.selectbox(
     ],
 )
 
+if menu == "Dashboard":
+    st.header("📊 Food Waste Management Dashboard")
+
+    # Get inventory
+    items = get_all_items()
+
+    # Get all actions
+    waste_count = 0
+    donation_count = 0
+
+    for item in items:
+        actions = get_item_actions(item[1])
+
+        for action in actions:
+            if action[1] == ActionStatus.WASTE.value:
+                waste_count += 1
+            elif action[1] == ActionStatus.DONATION.value:
+                donation_count += 1
+
+    # Calculate expiry statistics
+    expired_count = 0
+    expiring_soon_count = 0
+    available_count = 0
+
+    total_quantity = 0
+
+    for item in items:
+        total_quantity += item[3]
+
+        expiry_date = datetime.strptime(
+            item[6], "%Y-%m-%d"
+        ).date()
+
+        status = calculate_status(expiry_date)
+
+        if status == ExpiryStatus.EXPIRED:
+            expired_count += 1
+
+        elif status == ExpiryStatus.EXPIRING_SOON:
+            expiring_soon_count += 1
+
+        elif status == ExpiryStatus.AVAILABLE:
+            available_count += 1
+
+    # ------------------------------------------------
+    # Custom CSS
+    # ------------------------------------------------
+
+    st.markdown(
+        """
+        <style>
+
+        .dashboard-card {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            min-height: 130px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .dashboard-card h2 {
+            font-size: 32px;
+            margin: 5px;
+        }
+
+        .dashboard-card p {
+            font-size: 17px;
+            margin: 0;
+        }
+
+        .blue-card {
+            background: linear-gradient(135deg, #2196F3, #1565C0);
+        }
+
+        .green-card {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        }
+
+        .orange-card {
+            background: linear-gradient(135deg, #FF9800, #EF6C00);
+        }
+
+        .red-card {
+            background: linear-gradient(135deg, #F44336, #C62828);
+        }
+
+        .purple-card {
+            background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+        }
+
+        .pink-card {
+            background: linear-gradient(135deg, #E91E63, #AD1457);
+        }
+
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # ------------------------------------------------
+    # Dashboard Cards
+    # ------------------------------------------------
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown(
+            f"""
+            <div class="dashboard-card blue-card">
+                <h2>📦 {len(items)}</h2>
+                <p>Total Food Items</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col2:
+        st.markdown(
+            f"""
+            <div class="dashboard-card green-card">
+                <h2>⚖️ {total_quantity:g}</h2>
+                <p>Total Quantity</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col3:
+        st.markdown(
+            f"""
+            <div class="dashboard-card purple-card">
+                <h2>🟢 {available_count}</h2>
+                <p>Available</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.write("")
+
+    col4, col5, col6 = st.columns(3)
+
+    with col4:
+        st.markdown(
+            f"""
+            <div class="dashboard-card orange-card">
+                <h2>🟠 {expiring_soon_count}</h2>
+                <p>Expiring Soon</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col5:
+        st.markdown(
+            f"""
+            <div class="dashboard-card red-card">
+                <h2>🔴 {expired_count}</h2>
+                <p>Expired</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col6:
+        st.markdown(
+            f"""
+            <div class="dashboard-card pink-card">
+                <h2>♻️ {waste_count}</h2>
+                <p>Food Waste</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ------------------------------------------------
+    # Donation
+    # ------------------------------------------------
+
+    st.write("")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(
+            f"""
+            <div class="dashboard-card green-card">
+                <h2>🎁 {donation_count}</h2>
+                <p>Food Donations</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col2:
+        st.markdown(
+            f"""
+            <div class="dashboard-card blue-card">
+                <h2>🍎 {available_count + expiring_soon_count}</h2>
+                <p>Usable Food Items</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # ------------------------------------------------
+    # Inventory Status Chart
+    # ------------------------------------------------
+
+    st.subheader("📈 Inventory Status")
+
+    chart_data = pd.DataFrame(
+        {
+            "Status": [
+                "Available",
+                "Expiring Soon",
+                "Expired",
+                "Waste",
+                "Donation",
+            ],
+            "Count": [
+                available_count,
+                expiring_soon_count,
+                expired_count,
+                waste_count,
+                donation_count,
+            ],
+        }
+    )
+
+    st.bar_chart(
+        chart_data.set_index("Status")
+    )
+
+    # ------------------------------------------------
+    # Quick Summary
+    # ------------------------------------------------
+
+    st.subheader("💡 Quick Summary")
+
+    if expired_count > 0:
+        st.error(
+            f"🔴 You have {expired_count} expired food item(s)."
+        )
+
+    if expiring_soon_count > 0:
+        st.warning(
+            f"🟠 {expiring_soon_count} food item(s) are expiring soon."
+        )
+
+    if donation_count > 0:
+        st.success(
+            f"🎁 You have donated {donation_count} food item(s)."
+        )
+
+    if waste_count > 0:
+        st.info(
+            f"♻️ {waste_count} food item(s) have been marked as waste."
+        )
+
+    if not items:
+        st.info(
+            "🍎 No food items yet. Start by adding food from the 'Add Food Item' menu."
+        )
+
 st.write(f"You selected: {menu}")
 
 if menu == "Add Food Item":
@@ -331,7 +597,7 @@ if menu == "Waste / Donation":
                         st.error("Item not found.")
                     else:
                         save_item_actionstatus(
-                            item, action_status, datetime.now().date()
+                            item[1], action_status, datetime.now().date()
                         )
                         st.success(
                             f"Food item with ID '{item_id}' marked as '{action}'."
