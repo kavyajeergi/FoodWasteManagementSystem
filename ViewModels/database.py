@@ -29,7 +29,7 @@ def create_action_table():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        CREATE TABLE item_actions (
+        CREATE TABLE IF NOT EXISTS item_actions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             item_name TEXT NOT NULL,
             action TEXT NOT NULL,
