@@ -161,6 +161,35 @@ def delete_food_item(item_id: str):
 
     return True
 
+def get_items_by_name_or_category(search_text: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    search_text = f"%{search_text}%"
+
+    cursor.execute(
+        """
+        SELECT
+            id,
+            name,
+            category,
+            quantity,
+            unit,
+            purchase_date,
+            expiry_date
+        FROM food_items
+        WHERE name LIKE ?
+           OR category LIKE ?
+        """,
+        (search_text, search_text),
+    )
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return rows
+
 
 def save_item_actionstatus(item_name: str, action: ActionStatus, action_date: date):
     conn = get_connection()
