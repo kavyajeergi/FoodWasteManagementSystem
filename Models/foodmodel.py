@@ -19,9 +19,3 @@ class ItemAction:
     item_name: str
     action: ActionStatus
     action_date: date
-
-class ActionStatus(str, Enum):
-    Consumed = "Consumed"
-    Available = "Available"
-    Waste = "Mark as Waste"
-    Donation = "Mark as Donation"
