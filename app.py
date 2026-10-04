@@ -314,7 +314,10 @@ if menu == "Waste / Donation":
 
         action = st.selectbox("Action", ["Mark as Waste", "Mark as Donation"])
 
-        action_status = ActionStatus(action)
+        if action == "Mark as Waste":
+            action_status = ActionStatus.WASTE
+        else:
+            action_status = ActionStatus.DONATION
 
         if st.button("Submit"):
             if item_id:
