@@ -3,12 +3,12 @@ import sqlite3
 DATABASE_NAME = "food_inventory.db"
 
 
-def get_db_connection():
+def get_connection():
     return sqlite3.connect(DATABASE_NAME)
 
 
 def create_table():
-    conn = get_db_connection()
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS food_items (
