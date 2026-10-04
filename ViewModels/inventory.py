@@ -12,8 +12,8 @@ class ExpiryStatus(str, Enum):
 
 
 class ActionStatus(str, Enum):
-    MarkasWaste = "Mark as Waste"
-    MarkasDonation = "Mark as Donation"
+    WASTE = "WASTE"
+    DONATION = "DONATION"
 
 
 def calculate_status(expiry_date: date) -> ExpiryStatus:
