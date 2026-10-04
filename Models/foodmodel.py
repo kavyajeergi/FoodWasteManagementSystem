@@ -17,9 +17,8 @@ class FoodItem:
 @dataclass
 class ItemAction:
     item_name: str
-    action: ActionStatus = ActionStatus.Available  # "consumed" or "discarded"
+    action: ActionStatus
     action_date: date
-
 
 class ActionStatus(str, Enum):
     Consumed = "Consumed"
