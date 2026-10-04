@@ -1,7 +1,8 @@
 from datetime import date
+from enum import Enum
+
 from ViewModels.database import get_connection
 from Models.foodmodel import FoodItem
-from enum import Enum
 
 
 class ExpiryStatus(str, Enum):
@@ -10,7 +11,12 @@ class ExpiryStatus(str, Enum):
     AVAILABLE = "AVAILABLE"
 
 
-def calculate_status(expiry_date: date) -> str:
+class ActionStatus(str, Enum):
+    CONSUMED = "CONSUMED"
+    DISCARDED = "DISCARDED"
+
+
+def calculate_status(expiry_date: date) -> ExpiryStatus:
     today = date.today()
     days_remaining = (expiry_date - today).days
 
@@ -62,35 +68,10 @@ def add_food_item(item: FoodItem):
     finally:
         conn.close()
 
+
 def get_all_items():
 
     conn = get_connection()
-
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            id,
-            name,
-            category,
-            quantity,
-            unit,
-            purchase_date,
-            expiry_date
-        FROM food_items
-    """)
-
-    rows = cursor.fetchall()
-
-    conn.close()
-
-    return rows
-
-
-def get_items_by_name_or_category(search_term: str):
-
-    conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute(
@@ -104,9 +85,7 @@ def get_items_by_name_or_category(search_term: str):
             purchase_date,
             expiry_date
         FROM food_items
-        WHERE name LIKE ? OR category LIKE ?
-    """,
-        (f"%{search_term}%", f"%{search_term}%"),
+        """
     )
 
     rows = cursor.fetchall()
@@ -119,7 +98,6 @@ def get_items_by_name_or_category(search_term: str):
 def get_item_by_id(item_id: str):
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute(
@@ -134,7 +112,7 @@ def get_item_by_id(item_id: str):
             expiry_date
         FROM food_items
         WHERE id = ?
-    """,
+        """,
         (item_id,),
     )
 
@@ -152,10 +130,10 @@ def update_food_item(item: FoodItem):
 
     cursor.execute(
         """
-    UPDATE food_items
-    SET quantity = ?
-    WHERE id = ?
-    """,
+        UPDATE food_items
+        SET quantity = ?
+        WHERE id = ?
+        """,
         (item.quantity, item.id),
     )
 
@@ -172,9 +150,9 @@ def delete_food_item(item_id: str):
 
     cursor.execute(
         """
-    DELETE FROM food_items
-    WHERE id = ?
-    """,
+        DELETE FROM food_items
+        WHERE id = ?
+        """,
         (item_id,),
     )
 
@@ -184,16 +162,28 @@ def delete_food_item(item_id: str):
     return True
 
 
-def save_item_actionstatus(item_name: str, action: str, action_date: date):
+def save_item_actionstatus(
+    item_name: str,
+    action: ActionStatus,
+    action_date: date
+):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        INSERT INTO item_actions (item_name, action, action_date)
+        INSERT INTO item_actions (
+            item_name,
+            action,
+            action_date
+        )
         VALUES (?, ?, ?)
         """,
-        (item_name, action, action_date.isoformat()),
+        (
+            item_name,
+            action.value,
+            action_date.isoformat()
+        ),
     )
 
     conn.commit()
@@ -201,12 +191,16 @@ def save_item_actionstatus(item_name: str, action: str, action_date: date):
 
 
 def get_item_actions(item_name: str):
+
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        SELECT item_name, action, action_date
+        SELECT
+            item_name,
+            action,
+            action_date
         FROM item_actions
         WHERE item_name = ?
         """,
