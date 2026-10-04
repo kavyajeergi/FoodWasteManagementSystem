@@ -25,38 +25,42 @@ def calculate_status(expiry_date: date) -> str:
 
 
 def add_food_item(item: FoodItem):
-
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
-        INSERT INTO food_items
-        (
-            id,
-            name,
-            category,
-            quantity,
-            unit,
-            purchase_date,
-            expiry_date
+    try:
+        cursor.execute(
+            """
+            INSERT INTO food_items (
+                id,
+                name,
+                category,
+                quantity,
+                unit,
+                purchase_date,
+                expiry_date
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                item.id,
+                item.name,
+                item.category,
+                item.quantity,
+                item.unit,
+                item.purchase_date,
+                item.expiry_date,
+            ),
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """,
-        (
-            item.id,
-            item.name,
-            item.category,
-            item.quantity,
-            item.unit,
-            item.purchase_date.isoformat(),
-            item.expiry_date.isoformat(),
-        ),
-    )
 
-    conn.commit()
-    conn.close()
+        conn.commit()
 
+    except Exception as e:
+        print("DATABASE ERROR:", e)
+        raise
+
+    finally:
+        conn.close()
 
 def get_all_items():
 
