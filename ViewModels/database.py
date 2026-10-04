@@ -29,12 +29,11 @@ def create_action_table():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS item_actions (
+        CREATE TABLE item_actions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             item_name TEXT NOT NULL,
             action TEXT NOT NULL,
-            action_date TEXT NOT NULL,
-            FOREIGN KEY (item_name) REFERENCES food_items (name)
+            action_date DATE NOT NULL
         )
     """)
     conn.commit()
