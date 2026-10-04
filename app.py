@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from ViewModels.database import create_table
+from ViewModels.database import create_table, create_action_table
 from Models.foodmodel import FoodItem, ItemAction
 from ViewModels.inventory import (
     calculate_status,
@@ -28,6 +28,8 @@ st.set_page_config(
 )
 
 create_table()  # Ensure the database table is created when the app starts
+
+create_action_table()
 
 st.title("🍎 Smart Food Waste Management System")
 
