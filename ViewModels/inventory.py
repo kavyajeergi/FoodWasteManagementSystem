@@ -1,6 +1,13 @@
 from datetime import date
 from ViewModels.database import get_connection
 from Models.foodmodel import FoodItem
+from enum import Enum
+
+
+class ExpiryStatus(str, Enum):
+    EXPIRED = "EXPIRED"
+    EXPIRING_SOON = "EXPIRING SOON"
+    AVAILABLE = "AVAILABLE"
 
 
 def calculate_status(expiry_date: date) -> str:
@@ -8,13 +15,13 @@ def calculate_status(expiry_date: date) -> str:
     days_remaining = (expiry_date - today).days
 
     if days_remaining < 0:
-        return "EXPIRED"
+        return ExpiryStatus.EXPIRED
 
     elif days_remaining <= 3:
-        return "EXPIRING SOON"
+        return ExpiryStatus.EXPIRING_SOON
 
     else:
-        return "AVAILABLE"
+        return ExpiryStatus.AVAILABLE
 
 
 def add_food_item(item: FoodItem):
@@ -152,3 +159,58 @@ def update_food_item(item: FoodItem):
     conn.close()
 
     return True
+
+
+def delete_food_item(item_id: str):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+    DELETE FROM food_items
+    WHERE id = ?
+    """,
+        (item_id,),
+    )
+
+    conn.commit()
+    conn.close()
+
+    return True
+
+
+def save_item_actionstatus(item_name: str, action: str, action_date: date):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO item_actions (item_name, action, action_date)
+        VALUES (?, ?, ?)
+        """,
+        (item_name, action, action_date.isoformat()),
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_item_actions(item_name: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT item_name, action, action_date
+        FROM item_actions
+        WHERE item_name = ?
+        """,
+        (item_name,),
+    )
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return rows

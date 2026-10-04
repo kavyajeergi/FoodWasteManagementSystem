@@ -2,9 +2,25 @@ import pandas as pd
 import streamlit as st
 
 from ViewModels.database import create_table
-from Models.foodmodel import FoodItem
-from ViewModels.inventory import calculate_status, add_food_item, get_all_items, get_items_by_name_or_category, get_item_by_id, update_food_item
-from ViewModels.validation import validate_datetime, validate_quantity, validate_expiry_date
+from Models.foodmodel import FoodItem, ItemAction, ActionStatus
+from ViewModels.inventory import (
+    calculate_status,
+    add_food_item,
+    get_all_items,
+    get_items_by_name_or_category,
+    get_item_by_id,
+    update_food_item,
+    delete_food_item,
+    ExpiryStatus,
+    save_item_actionstatus,
+    get_item_actions,
+)
+from ViewModels.validation import (
+    validate_datetime,
+    validate_quantity,
+    validate_expiry_date,
+)
+from datetime import datetime
 
 st.set_page_config(
     page_title="Food Waste Management System", page_icon="🍽️", layout="wide"
@@ -144,14 +160,10 @@ if menu == "Update Quantity":
             try:
                 # Fetch current quantity from the database
                 item = get_item_by_id(item_id)
-                purchase_date = datetime.strptime(
-                    item[5], "%Y-%m-%d"
-                ).date()
+                purchase_date = datetime.strptime(item[5], "%Y-%m-%d").date()
 
-                expiry_date = datetime.strptime(
-                    item[6], "%Y-%m-%d"
-                ).date()
-                
+                expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
+
                 if not item:
                     st.error("Item not found.")
                 else:
@@ -185,6 +197,186 @@ if menu == "Update Quantity":
             except Exception as e:
                 st.error(f"Database error: {e}")
 
+if menu == "Remove Item":
+    st.header("🗑️ Remove Food Item")
 
-    
-    
+    item_id = st.text_input("Enter Item ID to remove")
+
+    if st.button("Remove Item"):
+        if item_id:
+            try:
+                # Fetch the item to ensure it exists
+                item = get_item_by_id(item_id)
+                if not item:
+                    st.error("Item not found.")
+                else:
+                    # Remove the item from the database
+                    delete_food_item(item_id)
+                    st.success(f"Food item with ID '{item_id}' removed successfully.")
+            except Exception as e:
+                st.error(f"Database error: {e}")
+        else:
+            st.error("Please enter an Item ID.")
+
+if menu == "Expiry Monitor":
+    st.header("⏰ Expiry Monitor")
+
+    items = get_all_items()
+
+    expiring_soon = []
+    expired = []
+    available = []
+
+    for item in items:
+        expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
+        status = calculate_status(expiry_date)
+
+        if status == ExpiryStatus.EXPIRING_SOON:
+            expiring_soon.append(item)
+        elif status == ExpiryStatus.EXPIRED:
+            expired.append(item)
+        else:
+            available.append(item)
+
+    if expiring_soon:
+        st.subheader("Items Expiring Soon")
+        df_expiring_soon = pd.DataFrame(
+            expiring_soon,
+            columns=[
+                "ID",
+                "Name",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Purchase Date",
+                "Expiry Date",
+            ],
+        )
+        st.dataframe(df_expiring_soon, use_container_width=True)
+
+    if expired:
+        st.subheader("Expired Items")
+
+        df_expired = pd.DataFrame(
+            expired,
+            columns=[
+                "ID",
+                "Name",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Purchase Date",
+                "Expiry Date",
+            ],
+        )
+        st.dataframe(df_expired, use_container_width=True)
+
+    if available:
+        st.subheader("Available Items")
+
+        df_available = pd.DataFrame(
+            available,
+            columns=[
+                "ID",
+                "Name",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Purchase Date",
+                "Expiry Date",
+            ],
+        )
+        st.dataframe(df_available, use_container_width=True)
+
+if menu == "Waste / Donation":
+    st.header("♻️ Waste / Donation Management")
+
+    items = get_all_items()
+
+    if items:
+        df = pd.DataFrame(
+            items,
+            columns=[
+                "ID",
+                "Name",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Purchase Date",
+                "Expiry Date",
+            ],
+        )
+
+        st.dataframe(df, use_container_width=True)
+
+        item_id = st.text_input("Enter Item ID to mark as Waste/Donation")
+
+        action = st.selectbox("Action", ["Mark as Waste", "Mark as Donation"])
+
+        if st.button("Submit"):
+            if item_id:
+                try:
+                    # Fetch the item to ensure it exists
+                    item = get_item_by_id(item_id)
+                    if not item:
+                        st.error("Item not found.")
+                    else:
+                        save_item_actionstatus(item, action, datetime.now().date())
+                        st.success(
+                            f"Food item with ID '{item_id}' marked as '{action}'."
+                        )
+                except Exception as e:
+                    st.error(f"Database error: {e}")
+            else:
+                st.error("Please enter an Item ID.")
+    else:
+        st.warning("No items available in the inventory.")
+
+if menu == "Inventory Summary":
+    st.header("📊 Inventory Summary")
+
+    items = get_all_items()
+
+    if items:
+        df = pd.DataFrame(
+            items,
+            columns=[
+                "ID",
+                "Name",
+                "Category",
+                "Quantity",
+                "Unit",
+                "Purchase Date",
+                "Expiry Date",
+            ],
+        )
+
+        st.dataframe(df, use_container_width=True)
+
+        # Summary statistics
+        total_items = len(items)
+        total_quantity = sum(
+            item[3] for item in items
+        )  # Assuming quantity is the 4th column
+
+        st.subheader("Summary Statistics")
+        st.write(f"Total Items: {total_items}")
+        st.write(f"Total Quantity: {total_quantity}")
+    else:
+        st.warning("No items available in the inventory.")
+
+    st.header("📊 Discard / Donation History")
+    item_actions = []
+
+    for item in items:
+        actions = get_item_actions(item[1])  # Assuming name is the 2nd column
+        item_actions.extend([(action[0], action[1], action[2]) for action in actions])
+
+    if item_actions:
+        df_actions = pd.DataFrame(
+            item_actions,
+            columns=["Item Name", "Action", "Action Date"],
+        )
+        st.dataframe(df_actions, use_container_width=True)
+    else:
+        st.warning("No discard/donation history available.")
