@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from ViewModels.database import create_table
-from Models.foodmodel import FoodItem, ItemAction, ActionStatus
+from Models.foodmodel import FoodItem, ItemAction
 from ViewModels.inventory import (
     calculate_status,
     add_food_item,
@@ -14,6 +14,7 @@ from ViewModels.inventory import (
     ExpiryStatus,
     save_item_actionstatus,
     get_item_actions,
+    ActionStatus,
 )
 from ViewModels.validation import (
     validate_datetime,
