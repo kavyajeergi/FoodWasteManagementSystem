@@ -92,6 +92,10 @@ col1, col2 = st.columns([2.5, 1])
 with col1:
     st.markdown(
         """
+        <div style="
+            text-align:left;
+            padding-top:10px;
+        ">
         <div class="app-title">
             🍎 FoodWise
         </div>
