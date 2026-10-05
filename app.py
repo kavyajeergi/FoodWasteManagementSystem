@@ -231,34 +231,21 @@ if menu == "Dashboard":
 
     st.markdown(
         """
-        <div style="
-            padding: 28px;
-            border-radius: 20px;
-            background: linear-gradient(
-                135deg,
-                #E8F5E9,
-                #F4F8F4
-            );
-            margin-bottom: 25px;
+        <h1 style="
+            color:#2E4D3A;
+            margin-bottom:5px;
         ">
+            👋 Welcome to FoodWise
+        </h1>
 
-            <h1 style="
-                color:#2E4D3A;
-                margin-bottom:5px;
-            ">
-                👋 Welcome to FoodWise
-            </h1>
-
-            <p style="
-                color:#68756C;
-                font-size:16px;
-                margin:0;
-            ">
-                Manage your food inventory, track expiry dates,
-                and reduce food waste.
-            </p>
-
-        </div>
+        <p style="
+            color:#68756C;
+            font-size:16px;
+            margin:0;
+        ">
+            Manage your food inventory, track expiry dates,
+            and reduce food waste.
+        </p>
         """,
         unsafe_allow_html=True
     )
