@@ -23,15 +23,9 @@ from ViewModels.validation import (
 )
 from datetime import datetime
 
-st.set_page_config(
-    page_title="Food Waste Management System", page_icon="🍽️", layout="wide"
-)
-
 create_table()  # Ensure the database table is created when the app starts
 
 create_action_table()
-
-st.title("🍎 Smart Food Waste Management System")
 
 # --------------------------------------------------
 # TOP NAVIGATION
