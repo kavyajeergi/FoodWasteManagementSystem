@@ -167,12 +167,15 @@ menu = st.session_state.menu
 st.divider()
 
 if menu == "Dashboard":
-    st.header("🍎 Food Waste Management")
+
+    # --------------------------------------------------
+    # Get inventory
+    # --------------------------------------------------
 
     items = get_all_items()
 
     # --------------------------------------------------
-    # Calculate dashboard statistics
+    # Dashboard statistics
     # --------------------------------------------------
 
     total_items = len(items)
@@ -189,7 +192,10 @@ if menu == "Dashboard":
 
         total_quantity += item[3]
 
+        # -------------------------------
         # Expiry status
+        # -------------------------------
+
         expiry_date = datetime.strptime(
             item[6], "%Y-%m-%d"
         ).date()
@@ -205,7 +211,10 @@ if menu == "Dashboard":
         elif status == ExpiryStatus.EXPIRED:
             expired_count += 1
 
-        # Waste / Donation history
+        # -------------------------------
+        # Waste / Donation
+        # -------------------------------
+
         actions = get_item_actions(item[1])
 
         for action in actions:
@@ -217,30 +226,37 @@ if menu == "Dashboard":
                 donation_count += 1
 
     # --------------------------------------------------
-    # Welcome section
+    # Page Header
     # --------------------------------------------------
 
     st.markdown(
         """
         <div style="
-            padding: 25px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+            padding: 28px;
+            border-radius: 20px;
+            background: linear-gradient(
+                135deg,
+                #E8F5E9,
+                #F4F8F4
+            );
             margin-bottom: 25px;
         ">
 
-        <h2 style="margin-bottom:5px;">
-            👋 Welcome to your Food Dashboard
-        </h2>
+            <h1 style="
+                color:#2E4D3A;
+                margin-bottom:5px;
+            ">
+                👋 Welcome to FoodWise
+            </h1>
 
-        <p style="
-            font-size:16px;
-            color:#555;
-            margin-bottom:0;
-        ">
-            Keep track of your food, reduce waste, and make the most
-            of your inventory.
-        </p>
+            <p style="
+                color:#68756C;
+                font-size:16px;
+                margin:0;
+            ">
+                Manage your food inventory, track expiry dates,
+                and reduce food waste.
+            </p>
 
         </div>
         """,
@@ -248,7 +264,7 @@ if menu == "Dashboard":
     )
 
     # --------------------------------------------------
-    # Main summary
+    # Main Statistics
     # --------------------------------------------------
 
     col1, col2, col3 = st.columns(3)
@@ -286,8 +302,8 @@ if menu == "Dashboard":
         ) * 100
 
         st.write(
-            f"**{healthy_percentage:.0f}%** of your food inventory "
-            "is currently available."
+            f"**{healthy_percentage:.0f}%** of your food "
+            "inventory is currently available."
         )
 
         st.progress(
@@ -297,7 +313,138 @@ if menu == "Dashboard":
     else:
 
         st.info(
-            "Your inventory is empty. Add some food items to get started."
+            "Your inventory is empty. "
+            "Add food items to get started."
+        )
+
+    st.write("")
+
+    # --------------------------------------------------
+    # Inventory Overview
+    # --------------------------------------------------
+
+    st.subheader("📈 Inventory Overview")
+
+    chart_col, insight_col = st.columns([1.5, 1])
+
+    # --------------------------------------------------
+    # Donut Chart
+    # --------------------------------------------------
+
+    with chart_col:
+
+        if total_items > 0:
+
+            import plotly.graph_objects as go
+
+            labels = [
+                "Available",
+                "Expiring Soon",
+                "Expired"
+            ]
+
+            values = [
+                available_count,
+                expiring_soon_count,
+                expired_count
+            ]
+
+            fig = go.Figure(
+                data=[
+                    go.Pie(
+                        labels=labels,
+                        values=values,
+                        hole=0.65,
+                        textinfo="label+percent",
+                        hovertemplate=(
+                            "<b>%{label}</b><br>"
+                            "Items: %{value}<br>"
+                            "Percentage: %{percent}"
+                            "<extra></extra>"
+                        )
+                    )
+                ]
+            )
+
+            fig.update_layout(
+                height=350,
+                margin=dict(
+                    l=10,
+                    r=10,
+                    t=20,
+                    b=20
+                ),
+                showlegend=True,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5
+                )
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        else:
+
+            st.info(
+                "No inventory data available."
+            )
+
+    # --------------------------------------------------
+    # Inventory Insight
+    # --------------------------------------------------
+
+    with insight_col:
+
+        st.markdown(
+            f"""
+            <div style="
+                background:white;
+                padding:25px;
+                border-radius:18px;
+                border:1px solid #E5EBE6;
+                min-height:290px;
+            ">
+
+                <h3 style="
+                    color:#2E4D3A;
+                ">
+                    💡 Inventory Insight
+                </h3>
+
+                <p style="
+                    color:#68756C;
+                    line-height:1.6;
+                ">
+                    Here is a quick look at your current
+                    food inventory.
+                </p>
+
+                <hr>
+
+                <p>
+                    🟢 <b>{available_count}</b>
+                    Available
+                </p>
+
+                <p>
+                    🟠 <b>{expiring_soon_count}</b>
+                    Expiring Soon
+                </p>
+
+                <p>
+                    🔴 <b>{expired_count}</b>
+                    Expired
+                </p>
+
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
     st.write("")
@@ -343,68 +490,7 @@ if menu == "Dashboard":
     st.write("")
 
     # --------------------------------------------------
-    # Inventory status chart
-    # --------------------------------------------------
-
-    # --------------------------------------------------
-# Inventory Overview
-# --------------------------------------------------
-
-st.subheader("📊 Inventory Overview")
-
-chart_col, insight_col = st.columns([1.5, 1])
-
-with chart_col:
-
-    chart_data = pd.DataFrame(
-        {
-            "Status": [
-                "Available",
-                "Expiring Soon",
-                "Expired"
-            ],
-            "Items": [
-                available_count,
-                expiring_soon_count,
-                expired_count
-            ]
-        }
-    )
-
-    st.bar_chart(
-        chart_data.set_index("Status"),
-        height=300
-    )
-
-
-with insight_col:
-
-    st.markdown(
-        """
-        <div style="
-            background:white;
-            padding:24px;
-            border-radius:18px;
-            border:1px solid #E5EBE6;
-            height:250px;
-        ">
-
-        <h3>💡 Inventory Insight</h3>
-
-        <p style="color:#68756C;">
-        Keep an eye on items that are approaching
-        their expiry date.
-        </p>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.write("")
-
-    # --------------------------------------------------
-    # Waste & Donation
+    # Food Impact
     # --------------------------------------------------
 
     st.subheader("♻️ Food Impact")
@@ -416,19 +502,25 @@ with insight_col:
         st.markdown(
             f"""
             <div style="
-                padding:20px;
-                border-radius:15px;
-                background:#FFF8E1;
-                border-left:6px solid #FFB300;
+                padding:22px;
+                border-radius:16px;
+                background:#F1F8E9;
+                border:1px solid #DCEBD4;
             ">
 
-            <h3 style="margin:0;">
-                🎁 {donation_count}
-            </h3>
+                <h2 style="
+                    color:#397A4A;
+                    margin:0;
+                ">
+                    🎁 {donation_count}
+                </h2>
 
-            <p style="margin:5px 0 0 0;">
-                Food Donations
-            </p>
+                <p style="
+                    color:#68756C;
+                    margin:5px 0 0 0;
+                ">
+                    Food Donations
+                </p>
 
             </div>
             """,
@@ -440,19 +532,25 @@ with insight_col:
         st.markdown(
             f"""
             <div style="
-                padding:20px;
-                border-radius:15px;
-                background:#FFEBEE;
-                border-left:6px solid #E53935;
+                padding:22px;
+                border-radius:16px;
+                background:#FFF5F4;
+                border:1px solid #F1D9D6;
             ">
 
-            <h3 style="margin:0;">
-                ♻️ {waste_count}
-            </h3>
+                <h2 style="
+                    color:#C45A52;
+                    margin:0;
+                ">
+                    ♻️ {waste_count}
+                </h2>
 
-            <p style="margin:5px 0 0 0;">
-                Food Waste
-            </p>
+                <p style="
+                    color:#68756C;
+                    margin:5px 0 0 0;
+                ">
+                    Food Waste
+                </p>
 
             </div>
             """,
@@ -462,7 +560,7 @@ with insight_col:
     st.write("")
 
     # --------------------------------------------------
-    # Smart suggestion
+    # Smart Suggestion
     # --------------------------------------------------
 
     st.subheader("💡 Smart Suggestion")
@@ -471,14 +569,14 @@ with insight_col:
 
         st.error(
             "Some food items have already expired. "
-            "Consider reviewing them in the Expiry Monitor."
+            "Review them in the Expiry Monitor."
         )
 
     elif expiring_soon_count > 0:
 
         st.warning(
             "Some food items are expiring soon. "
-            "Consider consuming or donating them before they expire."
+            "Consider consuming or donating them."
         )
 
     elif total_items == 0:
@@ -492,7 +590,7 @@ with insight_col:
         st.success(
             "🎉 Great job! Your inventory is in good shape."
         )
-
+        
 st.write(f"You selected: {menu}")
 
 if menu == "Add Food Item":
@@ -606,13 +704,13 @@ if menu == "Update Quantity":
             try:
                 # Fetch current quantity from the database
                 item = get_item_by_id(item_id)
-                purchase_date = datetime.strptime(item[5], "%Y-%m-%d").date()
-
-                expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
+                
 
                 if not item:
                     st.error("Item not found.")
                 else:
+                    purchase_date = datetime.strptime(item[5], "%Y-%m-%d").date()
+                    expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
                     current_quantity = item[3]  # Assuming quantity is the 4th column
 
                     if operation == "Increase":
