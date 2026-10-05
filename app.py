@@ -346,7 +346,15 @@ if menu == "Dashboard":
     # Inventory status chart
     # --------------------------------------------------
 
-    st.subheader("📈 Inventory Overview")
+    # --------------------------------------------------
+# Inventory Overview
+# --------------------------------------------------
+
+st.subheader("📊 Inventory Overview")
+
+chart_col, insight_col = st.columns([1.5, 1])
+
+with chart_col:
 
     chart_data = pd.DataFrame(
         {
@@ -364,7 +372,33 @@ if menu == "Dashboard":
     )
 
     st.bar_chart(
-        chart_data.set_index("Status")
+        chart_data.set_index("Status"),
+        height=300
+    )
+
+
+with insight_col:
+
+    st.markdown(
+        """
+        <div style="
+            background:white;
+            padding:24px;
+            border-radius:18px;
+            border:1px solid #E5EBE6;
+            height:250px;
+        ">
+
+        <h3>💡 Inventory Insight</h3>
+
+        <p style="color:#68756C;">
+        Keep an eye on items that are approaching
+        their expiry date.
+        </p>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     st.write("")
