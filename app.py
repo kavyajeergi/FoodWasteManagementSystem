@@ -94,7 +94,7 @@ with col1:
         """
         <div style="
             text-align:left;
-            padding-top:10px;
+            padding-top:20px;
         ">
         <div class="app-title">
             🍎 FoodWise
