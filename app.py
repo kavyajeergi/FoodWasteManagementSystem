@@ -90,49 +90,11 @@ st.markdown(
 col1, col2 = st.columns([2.5, 1])
 
 with col1:
-    st.markdown(
-        """
-        <div style="
-            text-align:left;
-            padding-top:20px;
-        ">
+    st.markdown("## 🍎 FoodWise")
+    st.caption("Smart Food Inventory & Waste Management")
 
-            <div style="
-                font-size:30px;
-                font-weight:700;
-                color:#2E4D3A;
-                margin-bottom:2px;
-            ">
-                🍎 FoodWise
-            </div>
-
-            <div style="
-                color:#718076;
-                font-size:14px;
-                margin-bottom:18px;
-            ">
-                Smart Food Inventory & Waste Management
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    
 with col2:
-    st.markdown(
-        """
-        <div style="
-            text-align:right;
-            padding-top:10px;
-            color:#718076;
-            font-size:14px;
-        ">
-            🌱 Reduce Waste • Save Food
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.caption("🌱 Reduce Waste • Save Food")
 
 
 # --------------------------------------------------
@@ -241,26 +203,8 @@ if menu == "Dashboard":
     # Page Header
     # --------------------------------------------------
 
-    st.markdown(
-        """
-        <h1 style="
-            color:#2E4D3A;
-            margin-bottom:5px;
-        ">
-            👋 Welcome to FoodWise
-        </h1>
-
-        <p style="
-            color:#68756C;
-            font-size:16px;
-            margin:0;
-        ">
-            Manage your food inventory, track expiry dates,
-            and reduce food waste.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+    st.title("👋 Welcome to FoodWise")
+    st.caption("Manage your food inventory, track expiry dates, and reduce food waste.")
 
     # --------------------------------------------------
     # Main Statistics
@@ -399,52 +343,11 @@ if menu == "Dashboard":
     # --------------------------------------------------
 
     with insight_col:
-
-        st.markdown(
-            f"""
-            <div style="
-                background:white;
-                padding:25px;
-                border-radius:18px;
-                border:1px solid #E5EBE6;
-                min-height:290px;
-            ">
-
-                <h3 style="
-                    color:#2E4D3A;
-                ">
-                    💡 Inventory Insight
-                </h3>
-
-                <p style="
-                    color:#68756C;
-                    line-height:1.6;
-                ">
-                    Here is a quick look at your current
-                    food inventory.
-                </p>
-
-                <hr>
-
-                <p>
-                    🟢 <b>{available_count}</b>
-                    Available
-                </p>
-
-                <p>
-                    🟠 <b>{expiring_soon_count}</b>
-                    Expiring Soon
-                </p>
-
-                <p>
-                    🔴 <b>{expired_count}</b>
-                    Expired
-                </p>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.markdown("### 💡 Inventory Insight")
+        st.write("Here is a quick look at your current food inventory.")
+        st.markdown(f"- 🟢 **{available_count}** Available")
+        st.markdown(f"- 🟠 **{expiring_soon_count}** Expiring Soon")
+        st.markdown(f"- 🔴 **{expired_count}** Expired")
 
     st.write("")
 
@@ -497,63 +400,25 @@ if menu == "Dashboard":
     impact_col1, impact_col2 = st.columns(2)
 
     with impact_col1:
-
         st.markdown(
             f"""
-            <div style="
-                padding:22px;
-                border-radius:16px;
-                background:#F1F8E9;
-                border:1px solid #DCEBD4;
-            ">
-
-                <h2 style="
-                    color:#397A4A;
-                    margin:0;
-                ">
-                    🎁 {donation_count}
-                </h2>
-
-                <p style="
-                    color:#68756C;
-                    margin:5px 0 0 0;
-                ">
-                    Food Donations
-                </p>
-
+            <div style="padding:22px;border-radius:16px;background:#F1F8E9;border:1px solid #DCEBD4;">
+                <h2 style="color:#397A4A;margin:0;">🎁 {donation_count}</h2>
+                <p style="color:#68756C;margin:5px 0 0 0;">Food Donations</p>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
 
     with impact_col2:
-
         st.markdown(
             f"""
-            <div style="
-                padding:22px;
-                border-radius:16px;
-                background:#FFF5F4;
-                border:1px solid #F1D9D6;
-            ">
-
-                <h2 style="
-                    color:#C45A52;
-                    margin:0;
-                ">
-                    ♻️ {waste_count}
-                </h2>
-
-                <p style="
-                    color:#68756C;
-                    margin:5px 0 0 0;
-                ">
-                    Food Waste
-                </p>
-
+            <div style="padding:22px;border-radius:16px;background:#FFF5F4;border:1px solid #F1D9D6;">
+                <h2 style="color:#C45A52;margin:0;">♻️ {waste_count}</h2>
+                <p style="color:#68756C;margin:5px 0 0 0;">Food Waste</p>
             </div>
             """,
-            unsafe_allow_html=True
+            unsafe_allow_html=True,
         )
 
     st.write("")
@@ -589,8 +454,6 @@ if menu == "Dashboard":
         st.success(
             "🎉 Great job! Your inventory is in good shape."
         )
-        
-st.write(f"You selected: {menu}")
 
 if menu == "Add Food Item":
     st.header("➕ Add Food Item")
@@ -703,14 +566,13 @@ if menu == "Update Quantity":
             try:
                 # Fetch current quantity from the database
                 item = get_item_by_id(item_id)
-                
 
                 if not item:
                     st.error("Item not found.")
                 else:
                     purchase_date = datetime.strptime(item[5], "%Y-%m-%d").date()
                     expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
-                    current_quantity = item[3]  # Assuming quantity is the 4th column
+                    current_quantity = item[3]
 
                     if operation == "Increase":
                         new_quantity = current_quantity + amount
@@ -908,7 +770,7 @@ if menu == "Inventory Summary":
         total_items = len(items)
         total_quantity = sum(
             item[3] for item in items
-        )  # Assuming quantity is the 4th column
+        )
 
         st.subheader("Summary Statistics")
         st.write(f"Total Items: {total_items}")
@@ -920,7 +782,7 @@ if menu == "Inventory Summary":
     item_actions = []
 
     for item in items:
-        actions = get_item_actions(item[1])  # Assuming name is the 2nd column
+        actions = get_item_actions(item[1])
         item_actions.extend([(action[0], action[1], action[2]) for action in actions])
 
     if item_actions:
