@@ -96,18 +96,29 @@ with col1:
             text-align:left;
             padding-top:20px;
         ">
-            <div class="app-title">
+
+            <div style="
+                font-size:30px;
+                font-weight:700;
+                color:#2E4D3A;
+                margin-bottom:2px;
+            ">
                 🍎 FoodWise
             </div>
 
-            <div class="app-subtitle">
+            <div style="
+                color:#718076;
+                font-size:14px;
+                margin-bottom:18px;
+            ">
                 Smart Food Inventory & Waste Management
             </div>
+
         </div>
         """,
         unsafe_allow_html=True
     )
-
+    
 with col2:
     st.markdown(
         """
