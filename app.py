@@ -96,12 +96,13 @@ with col1:
             text-align:left;
             padding-top:20px;
         ">
-        <div class="app-title">
-            🍎 FoodWise
-        </div>
+            <div class="app-title">
+                🍎 FoodWise
+            </div>
 
-        <div class="app-subtitle">
-            Smart Food Inventory & Waste Management
+            <div class="app-subtitle">
+                Smart Food Inventory & Waste Management
+            </div>
         </div>
         """,
         unsafe_allow_html=True
