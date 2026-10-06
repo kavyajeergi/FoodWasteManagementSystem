@@ -28,13 +28,19 @@ create_table()  # Ensure the database table is created when the app starts
 create_action_table()
 
 # --------------------------------------------------
-# TOP NAVIGATION
+# PAGE CONFIG & STYLING
 # --------------------------------------------------
+
+st.set_page_config(
+    page_title="FoodWise",
+    page_icon="🍎",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 st.markdown(
     """
     <style>
-
     /* Main background */
     .stApp {
         background-color: #F7F9F6;
@@ -43,20 +49,8 @@ st.markdown(
     /* Remove default top padding */
     .block-container {
         padding-top: 1rem;
-    }
-
-    /* App title */
-    .app-title {
-        font-size: 30px;
-        font-weight: 700;
-        color: #2E4D3A;
-        margin-bottom: 2px;
-    }
-
-    .app-subtitle {
-        color: #718076;
-        font-size: 14px;
-        margin-bottom: 18px;
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 
     /* Navigation buttons */
@@ -69,6 +63,10 @@ st.markdown(
         font-weight: 600;
         height: 45px;
         transition: all 0.2s ease;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: visible;
+        text-overflow: unset;
     }
 
     div.stButton > button:hover {
@@ -77,81 +75,80 @@ st.markdown(
         color: #285438;
     }
 
+    /* Active button styling */
+    div.stButton > button:active {
+        background-color: #D4E9D8;
+        border-color: #A8C7AF;
+    }
+
+    @media (max-width: 1200px) {
+        div.stButton > button {
+            font-size: 12px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+    }
+
+    @media (max-width: 900px) {
+        div.stButton > button {
+            font-size: 11px;
+            height: 40px;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-
 # --------------------------------------------------
 # HEADER
 # --------------------------------------------------
 
-col1, col2 = st.columns([2.5, 1])
-
-with col1:
-    st.markdown("## 🍎 FoodWise")
-    st.caption("Smart Food Inventory & Waste Management")
-
-with col2:
-    st.caption("🌱 Reduce Waste • Save Food")
-
+st.markdown("# 🍎 FoodWise")
+st.markdown("**Smart Food Inventory & Waste Management**")
+st.divider()
 
 # --------------------------------------------------
-# NAVIGATION
+# NAVIGATION TABS
 # --------------------------------------------------
-
-nav1, nav2, nav3, nav4, nav5, nav6, nav7 = st.columns(7)
 
 if "menu" not in st.session_state:
     st.session_state.menu = "Dashboard"
 
+# Use columns with flexible width so text fits multiple screen sizes
+nav_items = [
+    ("🏠 Dashboard", "Dashboard"),
+    ("➕ Add Food", "Add Food Item"),
+    ("📦 Inventory", "View Inventory"),
+    ("🔍 Search", "Search Item"),
+    ("⏰ Expiry", "Expiry Monitor"),
+    ("♻️ Waste", "Waste / Donation"),
+    ("📊 Summary", "Inventory Summary"),
+]
 
-with nav1:
-    if st.button("🏠 Dashboard", use_container_width=True):
-        st.session_state.menu = "Dashboard"
+nav_cols = st.columns([1.2, 1.2, 1.3, 1.2, 1.2, 1.2, 1.2])
 
-with nav2:
-    if st.button("➕ Add Food", use_container_width=True):
-        st.session_state.menu = "Add Food Item"
-
-with nav3:
-    if st.button("📦 Inventory", use_container_width=True):
-        st.session_state.menu = "View Inventory"
-
-with nav4:
-    if st.button("🔍 Search", use_container_width=True):
-        st.session_state.menu = "Search Item"
-
-with nav5:
-    if st.button("⏰ Expiry", use_container_width=True):
-        st.session_state.menu = "Expiry Monitor"
-
-with nav6:
-    if st.button("♻️ Waste", use_container_width=True):
-        st.session_state.menu = "Waste / Donation"
-
-with nav7:
-    if st.button("📊 Summary", use_container_width=True):
-        st.session_state.menu = "Inventory Summary"
-
-
-menu = st.session_state.menu
+for col, (label, menu_value) in zip(nav_cols, nav_items):
+    with col:
+        if st.button(label, use_container_width=True, key=f"nav_{menu_value}"):
+            st.session_state.menu = menu_value
 
 st.divider()
 
+menu = st.session_state.menu
+
+# --------------------------------------------------
+# DASHBOARD
+# --------------------------------------------------
+
 if menu == "Dashboard":
 
-    # --------------------------------------------------
     # Get inventory
-    # --------------------------------------------------
-
     items = get_all_items()
 
-    # --------------------------------------------------
     # Dashboard statistics
-    # --------------------------------------------------
-
     total_items = len(items)
     total_quantity = 0
 
@@ -166,10 +163,7 @@ if menu == "Dashboard":
 
         total_quantity += item[3]
 
-        # -------------------------------
         # Expiry status
-        # -------------------------------
-
         expiry_date = datetime.strptime(
             item[6], "%Y-%m-%d"
         ).date()
@@ -185,10 +179,7 @@ if menu == "Dashboard":
         elif status == ExpiryStatus.EXPIRED:
             expired_count += 1
 
-        # -------------------------------
         # Waste / Donation
-        # -------------------------------
-
         actions = get_item_actions(item[1])
 
         for action in actions:
@@ -199,17 +190,11 @@ if menu == "Dashboard":
             elif action[1] == ActionStatus.DONATION.value:
                 donation_count += 1
 
-    # --------------------------------------------------
     # Page Header
-    # --------------------------------------------------
-
     st.title("👋 Welcome to FoodWise")
     st.caption("Manage your food inventory, track expiry dates, and reduce food waste.")
 
-    # --------------------------------------------------
     # Main Statistics
-    # --------------------------------------------------
-
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -232,10 +217,7 @@ if menu == "Dashboard":
 
     st.write("")
 
-    # --------------------------------------------------
     # Inventory Health
-    # --------------------------------------------------
-
     st.subheader("📊 Inventory Health")
 
     if total_items > 0:
@@ -262,18 +244,12 @@ if menu == "Dashboard":
 
     st.write("")
 
-    # --------------------------------------------------
     # Inventory Overview
-    # --------------------------------------------------
-
     st.subheader("📈 Inventory Overview")
 
     chart_col, insight_col = st.columns([1.5, 1])
 
-    # --------------------------------------------------
     # Donut Chart
-    # --------------------------------------------------
-
     with chart_col:
 
         if total_items > 0:
@@ -338,10 +314,7 @@ if menu == "Dashboard":
                 "No inventory data available."
             )
 
-    # --------------------------------------------------
     # Inventory Insight
-    # --------------------------------------------------
-
     with insight_col:
         st.markdown("### 💡 Inventory Insight")
         st.write("Here is a quick look at your current food inventory.")
@@ -351,10 +324,7 @@ if menu == "Dashboard":
 
     st.write("")
 
-    # --------------------------------------------------
     # Needs Attention
-    # --------------------------------------------------
-
     st.subheader("⚠️ Needs Attention")
 
     attention_col1, attention_col2 = st.columns(2)
@@ -391,10 +361,7 @@ if menu == "Dashboard":
 
     st.write("")
 
-    # --------------------------------------------------
     # Food Impact
-    # --------------------------------------------------
-
     st.subheader("♻️ Food Impact")
 
     impact_col1, impact_col2 = st.columns(2)
@@ -423,10 +390,7 @@ if menu == "Dashboard":
 
     st.write("")
 
-    # --------------------------------------------------
     # Smart Suggestion
-    # --------------------------------------------------
-
     st.subheader("💡 Smart Suggestion")
 
     if expired_count > 0:
@@ -454,6 +418,10 @@ if menu == "Dashboard":
         st.success(
             "🎉 Great job! Your inventory is in good shape."
         )
+
+# --------------------------------------------------
+# ADD FOOD ITEM
+# --------------------------------------------------
 
 if menu == "Add Food Item":
     st.header("➕ Add Food Item")
@@ -502,6 +470,10 @@ if menu == "Add Food Item":
             st.error(str(e))
 
 
+# --------------------------------------------------
+# VIEW INVENTORY
+# --------------------------------------------------
+
 if menu == "View Inventory":
     st.header("📦 Food Inventory")
 
@@ -521,6 +493,10 @@ if menu == "View Inventory":
     )
 
     st.dataframe(df, use_container_width=True)
+
+# --------------------------------------------------
+# SEARCH ITEM
+# --------------------------------------------------
 
 if menu == "Search Item":
     st.header("🔍 Search Food")
@@ -551,6 +527,10 @@ if menu == "Search Item":
                 st.warning("No items found matching your search.")
         else:
             st.error("Please enter a search term.")
+
+# --------------------------------------------------
+# UPDATE QUANTITY
+# --------------------------------------------------
 
 if menu == "Update Quantity":
     st.header("📈 Update Food Quantity")
@@ -603,6 +583,10 @@ if menu == "Update Quantity":
             except Exception as e:
                 st.error(f"Database error: {e}")
 
+# --------------------------------------------------
+# REMOVE ITEM
+# --------------------------------------------------
+
 if menu == "Remove Item":
     st.header("🗑️ Remove Food Item")
 
@@ -623,6 +607,10 @@ if menu == "Remove Item":
                 st.error(f"Database error: {e}")
         else:
             st.error("Please enter an Item ID.")
+
+# --------------------------------------------------
+# EXPIRY MONITOR
+# --------------------------------------------------
 
 if menu == "Expiry Monitor":
     st.header("⏰ Expiry Monitor")
@@ -694,6 +682,10 @@ if menu == "Expiry Monitor":
         )
         st.dataframe(df_available, use_container_width=True)
 
+# --------------------------------------------------
+# WASTE / DONATION
+# --------------------------------------------------
+
 if menu == "Waste / Donation":
     st.header("♻️ Waste / Donation Management")
 
@@ -745,6 +737,10 @@ if menu == "Waste / Donation":
     else:
         st.warning("No items available in the inventory.")
 
+# --------------------------------------------------
+# INVENTORY SUMMARY
+# --------------------------------------------------
+
 if menu == "Inventory Summary":
     st.header("📊 Inventory Summary")
 
@@ -773,8 +769,13 @@ if menu == "Inventory Summary":
         )
 
         st.subheader("Summary Statistics")
-        st.write(f"Total Items: {total_items}")
-        st.write(f"Total Quantity: {total_quantity}")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric("Total Items", total_items)
+
+        with col2:
+            st.metric("Total Quantity", f"{total_quantity:g}")
     else:
         st.warning("No items available in the inventory.")
 
