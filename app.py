@@ -93,6 +93,7 @@ if "menu" not in st.session_state:
 nav_items = [
     ("🏠 Dashboard", "Dashboard"),
     ("➕ Add Food", "Add Food Item"),
+    ("✏️ Update Quantity", "Update Quantity"),
     ("📦 Inventory", "View Inventory"),
     ("🔍 Search", "Search Item"),
     ("⏰ Expiry", "Expiry Monitor"),
@@ -248,6 +249,44 @@ elif menu == "Add Food Item":
             st.success(f"Food item '{name}' added successfully!")
         except ValueError as e:
             st.error(str(e))
+
+elif menu == "Update Quantity":
+    st.markdown('<div class="page-title">✏️ Update Quantity</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Update the stock level for an existing food item</div>', unsafe_allow_html=True)
+
+    items = get_all_items()
+    if items:
+        df = pd.DataFrame(items, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+        item_id = st.text_input("Enter Item ID")
+        new_quantity = st.number_input("New Quantity", min_value=0.0, step=0.1)
+
+        if st.button("Update Quantity"):
+            if not item_id:
+                st.error("Please enter an Item ID.")
+            else:
+                item = get_item_by_id(item_id)
+                if not item:
+                    st.error("Item not found.")
+                else:
+                    try:
+                        validate_quantity(new_quantity)
+                        updated_item = FoodItem(
+                            id=item[0],
+                            name=item[1],
+                            category=item[2],
+                            quantity=new_quantity,
+                            unit=item[4],
+                            purchase_date=item[5],
+                            expiry_date=item[6],
+                        )
+                        update_food_item(updated_item)
+                        st.success(f"Quantity for item '{item[1]}' updated to {new_quantity} {item[4]}.")
+                    except ValueError as e:
+                        st.error(str(e))
+    else:
+        st.info("No items available in inventory.")
 
 elif menu == "View Inventory":
     st.markdown('<div class="page-title">📦 Inventory</div>', unsafe_allow_html=True)
