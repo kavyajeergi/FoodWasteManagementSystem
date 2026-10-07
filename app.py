@@ -51,7 +51,7 @@ st.markdown(
     <style>
         * {{ font-family: 'Segoe UI', sans-serif; }}
         .stApp {{ background: linear-gradient(135deg, {COLORS['bg_light']} 0%, #eef2ff 100%); }}
-        .block-container {{ padding-top: 0.5rem; padding-bottom: 1rem; padding-left: 1.5rem; padding-right: 1.5rem; max-width: 100%; }}
+        .block-container {{ padding-top: 1.5rem; padding-bottom: 1rem; padding-left: 1.5rem; padding-right: 1.5rem; max-width: 100%; }}
         h1, h2, h3 {{ color: {COLORS['text_primary']}; font-weight: 700; }}
         .page-title {{ font-size: 28px; font-weight: 700; color: {COLORS['text_primary']}; margin: 0.5rem 0 0.2rem 0; }}
         .page-subtitle {{ font-size: 13px; color: {COLORS['text_secondary']}; margin: 0 0 0.8rem 0; }}
