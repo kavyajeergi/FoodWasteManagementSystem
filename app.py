@@ -94,6 +94,7 @@ nav_items = [
     ("🏠 Dashboard", "Dashboard"),
     ("➕ Add Food", "Add Food Item"),
     ("✏️ Update Quantity", "Update Quantity"),
+    ("🗑️ Remove Item", "Remove Item"),
     ("📦 Inventory", "View Inventory"),
     ("🔍 Search", "Search Item"),
     ("⏰ Expiry", "Expiry Monitor"),
@@ -288,6 +289,30 @@ elif menu == "Update Quantity":
     else:
         st.info("No items available in inventory.")
 
+elif menu == "Remove Item":
+    st.markdown('<div class="page-title">🗑️ Remove Item</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Delete an item from your inventory</div>', unsafe_allow_html=True)
+
+    items = get_all_items()
+    if items:
+        df = pd.DataFrame(items, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+        item_id = st.text_input("Enter Item ID to remove")
+
+        if st.button("Remove Item"):
+            if not item_id:
+                st.error("Please enter an Item ID.")
+            else:
+                item = get_item_by_id(item_id)
+                if not item:
+                    st.error("Item not found.")
+                else:
+                    delete_food_item(item_id)
+                    st.success(f"Food item '{item[1]}' removed successfully.")
+    else:
+        st.info("No items available in inventory.")
+
 elif menu == "View Inventory":
     st.markdown('<div class="page-title">📦 Inventory</div>', unsafe_allow_html=True)
     items = get_all_items()
@@ -405,7 +430,7 @@ elif menu == "Inventory Summary":
         item_actions = []
         for item in items:
             actions = get_item_actions(item[1])
-            item_actions.extend([(action[0], action[1], action[2]) for action in actions])
+            item_actions.extend([(action[0], action[1], action[2)] for action in actions])
         if item_actions:
             df_actions = pd.DataFrame(item_actions, columns=["Item Name", "Action", "Action Date"])
             st.dataframe(df_actions, use_container_width=True, hide_index=True)
