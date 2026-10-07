@@ -1,8 +1,11 @@
 import pandas as pd
 import streamlit as st
+import plotly.graph_objects as go
+import plotly.express as px
+from datetime import datetime
 
 from ViewModels.database import create_table, create_action_table
-from Models.foodmodel import FoodItem, ItemAction
+from Models.foodmodel import FoodItem
 from ViewModels.inventory import (
     calculate_status,
     add_food_item,
@@ -21,103 +24,69 @@ from ViewModels.validation import (
     validate_quantity,
     validate_expiry_date,
 )
-from datetime import datetime
 
-create_table()  # Ensure the database table is created when the app starts
-
+create_table()
 create_action_table()
-
-# --------------------------------------------------
-# PAGE CONFIG & STYLING
-# --------------------------------------------------
 
 st.set_page_config(
     page_title="FoodWise",
     page_icon="🍎",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
+
+COLORS = {
+    "primary": "#10b981",
+    "primary_dark": "#059669",
+    "secondary": "#f59e0b",
+    "danger": "#ef4444",
+    "bg_light": "#f8fafc",
+    "bg_card": "#ffffff",
+    "text_primary": "#1e293b",
+    "text_secondary": "#64748b",
+}
 
 st.markdown(
-    """
+    f"""
     <style>
-    /* Main background */
-    .stApp {
-        background-color: #F7F9F6;
-    }
-
-    /* Remove default top padding */
-    .block-container {
-        padding-top: 1rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
-    }
-
-    /* Navigation buttons */
-    div.stButton > button {
-        width: 100%;
-        border-radius: 12px;
-        border: 1px solid #DDE7DF;
-        background-color: #FFFFFF;
-        color: #405548;
-        font-weight: 600;
-        height: 45px;
-        transition: all 0.2s ease;
-        font-size: 14px;
-        white-space: nowrap;
-        overflow: visible;
-        text-overflow: unset;
-    }
-
-    div.stButton > button:hover {
-        background-color: #E8F3EA;
-        border-color: #A8C7AF;
-        color: #285438;
-    }
-
-    /* Active button styling */
-    div.stButton > button:active {
-        background-color: #D4E9D8;
-        border-color: #A8C7AF;
-    }
-
-    @media (max-width: 1200px) {
-        div.stButton > button {
-            font-size: 12px;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-    }
-
-    @media (max-width: 900px) {
-        div.stButton > button {
-            font-size: 11px;
-            height: 40px;
-            padding-left: 6px;
-            padding-right: 6px;
-        }
-    }
+        * {{ font-family: 'Segoe UI', sans-serif; }}
+        .stApp {{ background: linear-gradient(135deg, {COLORS['bg_light']} 0%, #eef2ff 100%); }}
+        .block-container {{ padding-top: 1.5rem; padding-left: 2rem; padding-right: 2rem; max-width: 1400px; }}
+        h1, h2, h3 {{ color: {COLORS['text_primary']}; font-weight: 700; }}
+        .page-title {{ font-size: 32px; font-weight: 700; color: {COLORS['text_primary']}; margin-bottom: 0.2rem; }}
+        .page-subtitle {{ font-size: 14px; color: {COLORS['text_secondary']}; margin-bottom: 1rem; }}
+        .metric-card {{
+            padding: 20px 18px; border-radius: 16px; color: white;
+            background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.18);
+            margin-bottom: 1rem;
+        }}
+        .metric-card p {{ margin:0; }}
+        .metric-card .value {{ font-size: 30px; font-weight: 700; margin-top: 8px; }}
+        div.stButton > button {{
+            width: 100%; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
+            color: white; font-weight: 700; height: 48px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+        }}
+        div.stButton > button:hover {{
+            transform: translateY(-1px); box-shadow: 0 12px 22px rgba(16, 185, 129, 0.22);
+        }}
+        .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {{
+            border-radius: 10px !important; border: 1px solid #dbe3ef !important; padding: 10px 12px !important;
+        }}
+        .stDataFrame {{ border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }}
+        .card {{
+            background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+        }}
+        .stAlert {{ border-radius: 12px; }}
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-
-# --------------------------------------------------
-# HEADER
-# --------------------------------------------------
-
-st.markdown("# 🍎 FoodWise")
-st.markdown("**Smart Food Inventory & Waste Management**")
-st.divider()
-
-# --------------------------------------------------
-# NAVIGATION TABS
-# --------------------------------------------------
 
 if "menu" not in st.session_state:
     st.session_state.menu = "Dashboard"
 
-# Use columns with flexible width so text fits multiple screen sizes
 nav_items = [
     ("🏠 Dashboard", "Dashboard"),
     ("➕ Add Food", "Add Food Item"),
@@ -128,493 +97,183 @@ nav_items = [
     ("📊 Summary", "Inventory Summary"),
 ]
 
-nav_cols = st.columns([1.2, 1.2, 1.3, 1.2, 1.2, 1.2, 1.2])
-
+nav_cols = st.columns(len(nav_items))
 for col, (label, menu_value) in zip(nav_cols, nav_items):
     with col:
         if st.button(label, use_container_width=True, key=f"nav_{menu_value}"):
             st.session_state.menu = menu_value
 
-st.divider()
-
+st.markdown("---")
 menu = st.session_state.menu
 
-# --------------------------------------------------
-# DASHBOARD
-# --------------------------------------------------
+# Helper function for status display
+
+def get_status_label(expiry_date):
+    status = calculate_status(expiry_date)
+    if status == ExpiryStatus.AVAILABLE:
+        return "🟢 Available"
+    if status == ExpiryStatus.EXPIRING_SOON:
+        return "🟠 Expiring Soon"
+    return "🔴 Expired"
 
 if menu == "Dashboard":
-
-    # Get inventory
     items = get_all_items()
-
-    # Dashboard statistics
     total_items = len(items)
-    total_quantity = 0
-
+    total_quantity = sum(item[3] for item in items)
     available_count = 0
     expiring_soon_count = 0
     expired_count = 0
-
     waste_count = 0
     donation_count = 0
 
     for item in items:
-
-        total_quantity += item[3]
-
-        # Expiry status
-        expiry_date = datetime.strptime(
-            item[6], "%Y-%m-%d"
-        ).date()
-
+        expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
         status = calculate_status(expiry_date)
 
         if status == ExpiryStatus.AVAILABLE:
             available_count += 1
-
         elif status == ExpiryStatus.EXPIRING_SOON:
             expiring_soon_count += 1
-
         elif status == ExpiryStatus.EXPIRED:
             expired_count += 1
 
-        # Waste / Donation
-        actions = get_item_actions(item[1])
-
-        for action in actions:
-
+        for action in get_item_actions(item[1]):
             if action[1] == ActionStatus.WASTE.value:
                 waste_count += 1
-
             elif action[1] == ActionStatus.DONATION.value:
                 donation_count += 1
 
-    # Page Header
-    st.title("👋 Welcome to FoodWise")
-    st.caption("Manage your food inventory, track expiry dates, and reduce food waste.")
+    st.markdown('<div class="page-title">👋 Welcome to FoodWise</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Manage your food inventory, track expiry dates, and reduce food waste.</div>', unsafe_allow_html=True)
 
-    # Main Statistics
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "📦 Food Items",
-            total_items
-        )
-
-    with col2:
-        st.metric(
-            "⚖️ Total Quantity",
-            f"{total_quantity:g}"
-        )
-
-    with col3:
-        st.metric(
-            "🟢 Available",
-            available_count
-        )
+    metrics = st.columns(4)
+    with metrics[0]:
+        st.markdown(f'<div class="metric-card"><p>📦 Food Items</p><p class="value">{total_items}</p></div>', unsafe_allow_html=True)
+    with metrics[1]:
+        st.markdown(f'<div class="metric-card"><p>⚖️ Total Quantity</p><p class="value">{total_quantity:g}</p></div>', unsafe_allow_html=True)
+    with metrics[2]:
+        st.markdown(f'<div class="metric-card"><p>🟢 Available</p><p class="value">{available_count}</p></div>', unsafe_allow_html=True)
+    with metrics[3]:
+        st.markdown(f'<div class="metric-card"><p>🟠 Expiring Soon</p><p class="value">{expiring_soon_count}</p></div>', unsafe_allow_html=True)
 
     st.write("")
 
-    # Inventory Health
-    st.subheader("📊 Inventory Health")
+    health_col, insight_col = st.columns([1.8, 1.2])
 
-    if total_items > 0:
+    with health_col:
+        st.subheader("📊 Inventory Health")
+        if total_items > 0:
+            healthy_percentage = (available_count / total_items) * 100
+            st.write(f"**{healthy_percentage:.0f}%** of your food inventory is currently available.")
+            st.progress(min(healthy_percentage / 100, 1.0))
+        else:
+            st.info("Your inventory is empty. Add food items to get started.")
 
-        healthy_percentage = (
-            available_count / total_items
-        ) * 100
-
-        st.write(
-            f"**{healthy_percentage:.0f}%** of your food "
-            "inventory is currently available."
-        )
-
-        st.progress(
-            min(healthy_percentage / 100, 1.0)
-        )
-
-    else:
-
-        st.info(
-            "Your inventory is empty. "
-            "Add food items to get started."
-        )
-
-    st.write("")
-
-    # Inventory Overview
-    st.subheader("📈 Inventory Overview")
-
-    chart_col, insight_col = st.columns([1.5, 1])
-
-    # Donut Chart
-    with chart_col:
+        st.write("")
 
         if total_items > 0:
+            labels = ["Available", "Expiring Soon", "Expired"]
+            values = [available_count, expiring_soon_count, expired_count]
+            fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.5, marker=dict(colors=["#10b981", "#f59e0b", "#ef4444"]))])
+            fig.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=20), paper_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig, use_container_width=True)
 
-            import plotly.graph_objects as go
-
-            labels = [
-                "Available",
-                "Expiring Soon",
-                "Expired"
-            ]
-
-            values = [
-                available_count,
-                expiring_soon_count,
-                expired_count
-            ]
-
-            fig = go.Figure(
-                data=[
-                    go.Pie(
-                        labels=labels,
-                        values=values,
-                        hole=0.65,
-                        textinfo="label+percent",
-                        hovertemplate=(
-                            "<b>%{label}</b><br>"
-                            "Items: %{value}<br>"
-                            "Percentage: %{percent}"
-                            "<extra></extra>"
-                        )
-                    )
-                ]
-            )
-
-            fig.update_layout(
-                height=350,
-                margin=dict(
-                    l=10,
-                    r=10,
-                    t=20,
-                    b=20
-                ),
-                showlegend=True,
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=-0.15,
-                    xanchor="center",
-                    x=0.5
-                )
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        else:
-
-            st.info(
-                "No inventory data available."
-            )
-
-    # Inventory Insight
     with insight_col:
-        st.markdown("### 💡 Inventory Insight")
-        st.write("Here is a quick look at your current food inventory.")
-        st.markdown(f"- 🟢 **{available_count}** Available")
-        st.markdown(f"- 🟠 **{expiring_soon_count}** Expiring Soon")
-        st.markdown(f"- 🔴 **{expired_count}** Expired")
+        st.subheader("💡 Quick Summary")
+        st.markdown(
+            f"""
+            <div class="card">
+                <p><strong>Available:</strong> {available_count}</p>
+                <p><strong>Expiring Soon:</strong> {expiring_soon_count}</p>
+                <p><strong>Expired:</strong> {expired_count}</p>
+                <p><strong>Waste:</strong> {waste_count}</p>
+                <p><strong>Donation:</strong> {donation_count}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    st.write("")
-
-    # Needs Attention
-    st.subheader("⚠️ Needs Attention")
-
-    attention_col1, attention_col2 = st.columns(2)
-
-    with attention_col1:
-
-        if expiring_soon_count > 0:
-
-            st.warning(
-                f"🟠 **{expiring_soon_count} item(s)** "
-                "are expiring soon."
-            )
-
-        else:
-
-            st.success(
-                "✅ No food items are expiring soon."
-            )
-
-    with attention_col2:
+        st.write("")
 
         if expired_count > 0:
-
-            st.error(
-                f"🔴 **{expired_count} item(s)** "
-                "have expired."
-            )
-
+            st.error(f"🔴 {expired_count} item(s) have expired.")
+        elif expiring_soon_count > 0:
+            st.warning(f"🟠 {expiring_soon_count} item(s) are expiring soon.")
         else:
-
-            st.success(
-                "✅ No expired food items."
-            )
+            st.success("✅ No urgent items found.")
 
     st.write("")
-
-    # Food Impact
-    st.subheader("♻️ Food Impact")
 
     impact_col1, impact_col2 = st.columns(2)
-
     with impact_col1:
-        st.markdown(
-            f"""
-            <div style="padding:22px;border-radius:16px;background:#F1F8E9;border:1px solid #DCEBD4;">
-                <h2 style="color:#397A4A;margin:0;">🎁 {donation_count}</h2>
-                <p style="color:#68756C;margin:5px 0 0 0;">Food Donations</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+        st.markdown(f"<div class='card'><h3>🎁 Donations</h3><h2>{donation_count}</h2></div>", unsafe_allow_html=True)
     with impact_col2:
-        st.markdown(
-            f"""
-            <div style="padding:22px;border-radius:16px;background:#FFF5F4;border:1px solid #F1D9D6;">
-                <h2 style="color:#C45A52;margin:0;">♻️ {waste_count}</h2>
-                <p style="color:#68756C;margin:5px 0 0 0;">Food Waste</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<div class='card'><h3>♻️ Waste</h3><h2>{waste_count}</h2></div>", unsafe_allow_html=True)
 
-    st.write("")
+elif menu == "Add Food Item":
+    st.markdown('<div class="page-title">➕ Add Food Item</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Add a new food item to your inventory</div>', unsafe_allow_html=True)
 
-    # Smart Suggestion
-    st.subheader("💡 Smart Suggestion")
-
-    if expired_count > 0:
-
-        st.error(
-            "Some food items have already expired. "
-            "Review them in the Expiry Monitor."
-        )
-
-    elif expiring_soon_count > 0:
-
-        st.warning(
-            "Some food items are expiring soon. "
-            "Consider consuming or donating them."
-        )
-
-    elif total_items == 0:
-
-        st.info(
-            "Start by adding your first food item."
-        )
-
-    else:
-
-        st.success(
-            "🎉 Great job! Your inventory is in good shape."
-        )
-
-# --------------------------------------------------
-# ADD FOOD ITEM
-# --------------------------------------------------
-
-if menu == "Add Food Item":
-    st.header("➕ Add Food Item")
-
-    item_id = st.text_input("Item ID")
-
-    name = st.text_input("Food Name")
-
-    category = st.selectbox(
-        "Category", ["Dairy", "Vegetables", "Fruits", "Grains", "Meat", "Other"]
-    )
-
-    quantity = st.number_input("Quantity", min_value=0.0)
-
-    unit = st.selectbox("Unit", ["kg", "grams", "litres", "pieces"])
-
-    purchase_date = st.date_input("Purchase Date")
-
-    expiry_date = st.date_input("Expiry Date")
+    col1, col2 = st.columns(2)
+    with col1:
+        item_id = st.text_input("Item ID")
+        name = st.text_input("Food Name")
+        category = st.selectbox("Category", ["Dairy", "Vegetables", "Fruits", "Grains", "Meat", "Other"])
+        quantity = st.number_input("Quantity", min_value=0.0, step=0.1)
+    with col2:
+        unit = st.selectbox("Unit", ["kg", "grams", "litres", "pieces"])
+        purchase_date = st.date_input("Purchase Date")
+        expiry_date = st.date_input("Expiry Date")
 
     if st.button("Add Food Item"):
         try:
-            # Validate inputs
             validate_quantity(quantity)
             validate_datetime(purchase_date.isoformat())
             validate_datetime(expiry_date.isoformat())
             validate_expiry_date(purchase_date, expiry_date)
 
-            # Create a FoodItem instance
-            new_item = FoodItem(
-                id=item_id,
-                name=name,
-                category=category,
-                quantity=quantity,
-                unit=unit,
-                purchase_date=purchase_date,
-                expiry_date=expiry_date,
+            add_food_item(
+                FoodItem(
+                    id=item_id,
+                    name=name,
+                    category=category,
+                    quantity=quantity,
+                    unit=unit,
+                    purchase_date=purchase_date,
+                    expiry_date=expiry_date,
+                )
             )
-
-            # Add the food item to the database
-            add_food_item(new_item)
-
             st.success(f"Food item '{name}' added successfully!")
-
         except ValueError as e:
             st.error(str(e))
 
-
-# --------------------------------------------------
-# VIEW INVENTORY
-# --------------------------------------------------
-
-if menu == "View Inventory":
-    st.header("📦 Food Inventory")
-
+elif menu == "View Inventory":
+    st.markdown('<div class="page-title">📦 Inventory</div>', unsafe_allow_html=True)
     items = get_all_items()
+    if items:
+        df = pd.DataFrame(items, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+        df["Status"] = df["Expiry Date"].apply(lambda x: get_status_label(datetime.strptime(x, "%Y-%m-%d").date()))
+        st.dataframe(df, use_container_width=True, hide_index=True)
+    else:
+        st.info("No items in inventory.")
 
-    df = pd.DataFrame(
-        items,
-        columns=[
-            "ID",
-            "Name",
-            "Category",
-            "Quantity",
-            "Unit",
-            "Purchase Date",
-            "Expiry Date",
-        ],
-    )
-
-    st.dataframe(df, use_container_width=True)
-
-# --------------------------------------------------
-# SEARCH ITEM
-# --------------------------------------------------
-
-if menu == "Search Item":
-    st.header("🔍 Search Food")
-
+elif menu == "Search Item":
+    st.markdown('<div class="page-title">🔍 Search Food</div>', unsafe_allow_html=True)
     search_text = st.text_input("Enter food name or category")
-
     if st.button("Search"):
         if search_text:
             results = get_items_by_name_or_category(search_text)
-
             if results:
-                df_results = pd.DataFrame(
-                    results,
-                    columns=[
-                        "ID",
-                        "Name",
-                        "Category",
-                        "Quantity",
-                        "Unit",
-                        "Purchase Date",
-                        "Expiry Date",
-                    ],
-                )
-
-                st.dataframe(df_results, use_container_width=True)
-
+                df = pd.DataFrame(results, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+                df["Status"] = df["Expiry Date"].apply(lambda x: get_status_label(datetime.strptime(x, "%Y-%m-%d").date()))
+                st.dataframe(df, use_container_width=True, hide_index=True)
             else:
-                st.warning("No items found matching your search.")
+                st.warning("No items found.")
         else:
             st.error("Please enter a search term.")
 
-# --------------------------------------------------
-# UPDATE QUANTITY
-# --------------------------------------------------
-
-if menu == "Update Quantity":
-    st.header("📈 Update Food Quantity")
-
-    item_id = st.text_input("Enter Item ID to update")
-
-    operation = st.selectbox("Operation", ["Increase", "Decrease"])
-
-    amount = st.number_input("Amount to adjust", min_value=0.0)
-
-    if st.button("Update Quantity"):
-        if item_id and amount > 0:
-            try:
-                # Fetch current quantity from the database
-                item = get_item_by_id(item_id)
-
-                if not item:
-                    st.error("Item not found.")
-                else:
-                    purchase_date = datetime.strptime(item[5], "%Y-%m-%d").date()
-                    expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
-                    current_quantity = item[3]
-
-                    if operation == "Increase":
-                        new_quantity = current_quantity + amount
-                    else:  # Decrease
-                        new_quantity = current_quantity - amount
-
-                    if new_quantity < 0:
-                        st.error("Quantity cannot be negative.")
-                    else:
-                        # Update the quantity in the database
-                        update_food_item(
-                            FoodItem(
-                                id=item_id,
-                                name=item[1],
-                                category=item[2],
-                                quantity=new_quantity,
-                                unit=item[4],
-                                purchase_date=purchase_date,
-                                expiry_date=expiry_date,
-                            )
-                        )
-                        st.success(
-                            f"Quantity updated successfully. New quantity: {new_quantity}"
-                        )
-            except ValueError as e:
-                st.error(str(e))
-
-            except Exception as e:
-                st.error(f"Database error: {e}")
-
-# --------------------------------------------------
-# REMOVE ITEM
-# --------------------------------------------------
-
-if menu == "Remove Item":
-    st.header("🗑️ Remove Food Item")
-
-    item_id = st.text_input("Enter Item ID to remove")
-
-    if st.button("Remove Item"):
-        if item_id:
-            try:
-                # Fetch the item to ensure it exists
-                item = get_item_by_id(item_id)
-                if not item:
-                    st.error("Item not found.")
-                else:
-                    # Remove the item from the database
-                    delete_food_item(item_id)
-                    st.success(f"Food item with ID '{item_id}' removed successfully.")
-            except Exception as e:
-                st.error(f"Database error: {e}")
-        else:
-            st.error("Please enter an Item ID.")
-
-# --------------------------------------------------
-# EXPIRY MONITOR
-# --------------------------------------------------
-
-if menu == "Expiry Monitor":
-    st.header("⏰ Expiry Monitor")
-
+elif menu == "Expiry Monitor":
+    st.markdown('<div class="page-title">⏰ Expiry Monitor</div>', unsafe_allow_html=True)
     items = get_all_items()
 
     expiring_soon = []
@@ -624,7 +283,6 @@ if menu == "Expiry Monitor":
     for item in items:
         expiry_date = datetime.strptime(item[6], "%Y-%m-%d").date()
         status = calculate_status(expiry_date)
-
         if status == ExpiryStatus.EXPIRING_SOON:
             expiring_soon.append(item)
         elif status == ExpiryStatus.EXPIRED:
@@ -632,165 +290,85 @@ if menu == "Expiry Monitor":
         else:
             available.append(item)
 
-    if expiring_soon:
-        st.subheader("Items Expiring Soon")
-        df_expiring_soon = pd.DataFrame(
-            expiring_soon,
-            columns=[
-                "ID",
-                "Name",
-                "Category",
-                "Quantity",
-                "Unit",
-                "Purchase Date",
-                "Expiry Date",
-            ],
-        )
-        st.dataframe(df_expiring_soon, use_container_width=True)
-
-    if expired:
-        st.subheader("Expired Items")
-
-        df_expired = pd.DataFrame(
-            expired,
-            columns=[
-                "ID",
-                "Name",
-                "Category",
-                "Quantity",
-                "Unit",
-                "Purchase Date",
-                "Expiry Date",
-            ],
-        )
-        st.dataframe(df_expired, use_container_width=True)
-
-    if available:
-        st.subheader("Available Items")
-
-        df_available = pd.DataFrame(
-            available,
-            columns=[
-                "ID",
-                "Name",
-                "Category",
-                "Quantity",
-                "Unit",
-                "Purchase Date",
-                "Expiry Date",
-            ],
-        )
-        st.dataframe(df_available, use_container_width=True)
-
-# --------------------------------------------------
-# WASTE / DONATION
-# --------------------------------------------------
-
-if menu == "Waste / Donation":
-    st.header("♻️ Waste / Donation Management")
-
-    items = get_all_items()
-
-    if items:
-        df = pd.DataFrame(
-            items,
-            columns=[
-                "ID",
-                "Name",
-                "Category",
-                "Quantity",
-                "Unit",
-                "Purchase Date",
-                "Expiry Date",
-            ],
-        )
-
-        st.dataframe(df, use_container_width=True)
-
-        item_id = st.text_input("Enter Item ID to mark as Waste/Donation")
-
-        action = st.selectbox("Action", ["Mark as Waste", "Mark as Donation"])
-
-        if action == "Mark as Waste":
-            action_status = ActionStatus.WASTE
+    tabs = st.tabs(["🟠 Expiring Soon", "🔴 Expired", "🟢 Available"])
+    with tabs[0]:
+        if expiring_soon:
+            df = pd.DataFrame(expiring_soon, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+            st.dataframe(df, use_container_width=True, hide_index=True)
         else:
-            action_status = ActionStatus.DONATION
+            st.success("No expiring soon items.")
+
+    with tabs[1]:
+        if expired:
+            df = pd.DataFrame(expired, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+            st.dataframe(df, use_container_width=True, hide_index=True)
+        else:
+            st.success("No expired items.")
+
+    with tabs[2]:
+        if available:
+            df = pd.DataFrame(available, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+            st.dataframe(df, use_container_width=True, hide_index=True)
+        else:
+            st.info("No available items.")
+
+elif menu == "Waste / Donation":
+    st.markdown('<div class="page-title">♻️ Waste / Donation</div>', unsafe_allow_html=True)
+    items = get_all_items()
+    if items:
+        df = pd.DataFrame(items, columns=["ID", "Name", "Category", "Quantity", "Unit", "Purchase Date", "Expiry Date"])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+        item_id = st.text_input("Enter Item ID")
+        action = st.selectbox("Action", ["Mark as Waste", "Mark as Donation"])
+        action_status = ActionStatus.WASTE if action == "Mark as Waste" else ActionStatus.DONATION
 
         if st.button("Submit"):
             if item_id:
-                try:
-                    # Fetch the item to ensure it exists
-                    item = get_item_by_id(item_id)
-                    if not item:
-                        st.error("Item not found.")
-                    else:
-                        save_item_actionstatus(
-                            item[1], action_status, datetime.now().date()
-                        )
-                        st.success(
-                            f"Food item with ID '{item_id}' marked as '{action}'."
-                        )
-                except Exception as e:
-                    st.error(f"Database error: {e}")
+                item = get_item_by_id(item_id)
+                if not item:
+                    st.error("Item not found.")
+                else:
+                    save_item_actionstatus(item[1], action_status, datetime.now().date())
+                    st.success(f"Food item with ID '{item_id}' marked as '{action}'.")
             else:
                 st.error("Please enter an Item ID.")
     else:
-        st.warning("No items available in the inventory.")
+        st.warning("No items available in inventory.")
 
-# --------------------------------------------------
-# INVENTORY SUMMARY
-# --------------------------------------------------
-
-if menu == "Inventory Summary":
-    st.header("📊 Inventory Summary")
-
+elif menu == "Inventory Summary":
+    st.markdown('<div class="page-title">📊 Inventory Summary</div>', unsafe_allow_html=True)
     items = get_all_items()
-
     if items:
-        df = pd.DataFrame(
-            items,
-            columns=[
-                "ID",
-                "Name",
-                "Category",
-                "Quantity",
-                "Unit",
-                "Purchase Date",
-                "Expiry Date",
-            ],
-        )
-
-        st.dataframe(df, use_container_width=True)
-
-        # Summary statistics
         total_items = len(items)
-        total_quantity = sum(
-            item[3] for item in items
-        )
+        total_quantity = sum(item[3] for item in items)
+        category_counts = {}
+        for item in items:
+            category_counts[item[2]] = category_counts.get(item[2], 0) + 1
 
-        st.subheader("Summary Statistics")
-        col1, col2 = st.columns(2)
-
-        with col1:
+        metrics = st.columns(3)
+        with metrics[0]:
             st.metric("Total Items", total_items)
-
-        with col2:
+        with metrics[1]:
             st.metric("Total Quantity", f"{total_quantity:g}")
+        with metrics[2]:
+            st.metric("Categories", len(category_counts))
+
+        st.write("")
+        st.subheader("Items by Category")
+        fig = px.bar(x=list(category_counts.keys()), y=list(category_counts.values()), color=list(category_counts.values()))
+        fig.update_layout(height=350, paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("Waste / Donation History")
+        item_actions = []
+        for item in items:
+            actions = get_item_actions(item[1])
+            item_actions.extend([(action[0], action[1], action[2]) for action in actions])
+        if item_actions:
+            df_actions = pd.DataFrame(item_actions, columns=["Item Name", "Action", "Action Date"])
+            st.dataframe(df_actions, use_container_width=True, hide_index=True)
+        else:
+            st.info("No discard/donation history available.")
     else:
-        st.warning("No items available in the inventory.")
-
-    st.header("📊 Discard / Donation History")
-    item_actions = []
-
-    for item in items:
-        actions = get_item_actions(item[1])
-        item_actions.extend([(action[0], action[1], action[2]) for action in actions])
-
-    if item_actions:
-        df_actions = pd.DataFrame(
-            item_actions,
-            columns=["Item Name", "Action", "Action Date"],
-        )
-        st.dataframe(df_actions, use_container_width=True)
-    else:
-        st.warning("No discard/donation history available.")
+        st.info("No items available in inventory.")
