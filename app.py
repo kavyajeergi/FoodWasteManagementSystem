@@ -51,38 +51,41 @@ st.markdown(
     <style>
         * {{ font-family: 'Segoe UI', sans-serif; }}
         .stApp {{ background: linear-gradient(135deg, {COLORS['bg_light']} 0%, #eef2ff 100%); }}
-        .block-container {{ padding-top: 1.5rem; padding-left: 2rem; padding-right: 2rem; max-width: 1400px; }}
+        .block-container {{ padding-top: 0.5rem; padding-bottom: 1rem; padding-left: 1.5rem; padding-right: 1.5rem; max-width: 100%; }}
         h1, h2, h3 {{ color: {COLORS['text_primary']}; font-weight: 700; }}
-        .page-title {{ font-size: 32px; font-weight: 700; color: {COLORS['text_primary']}; margin-bottom: 0.2rem; }}
-        .page-subtitle {{ font-size: 14px; color: {COLORS['text_secondary']}; margin-bottom: 1rem; }}
+        .page-title {{ font-size: 28px; font-weight: 700; color: {COLORS['text_primary']}; margin: 0.5rem 0 0.2rem 0; }}
+        .page-subtitle {{ font-size: 13px; color: {COLORS['text_secondary']}; margin: 0 0 0.8rem 0; }}
         .metric-card {{
-            padding: 20px 18px; border-radius: 16px; color: white;
+            padding: 18px 16px; border-radius: 14px; color: white;
             background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.18);
-            margin-bottom: 1rem;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
         }}
-        .metric-card p {{ margin:0; }}
-        .metric-card .value {{ font-size: 30px; font-weight: 700; margin-top: 8px; }}
+        .metric-card p {{ margin: 0; font-size: 13px; }}
+        .metric-card .value {{ font-size: 28px; font-weight: 700; margin-top: 6px; }}
         div.stButton > button {{
-            width: 100%; border-radius: 12px; border: none;
+            width: 100%; border-radius: 10px; border: none;
             background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
-            color: white; font-weight: 700; height: 48px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+            color: white; font-weight: 600; height: 44px; font-size: 13px; box-shadow: 0 6px 16px rgba(16, 185, 129, 0.12);
         }}
         div.stButton > button:hover {{
-            transform: translateY(-1px); box-shadow: 0 12px 22px rgba(16, 185, 129, 0.22);
+            transform: translateY(-1px); box-shadow: 0 8px 18px rgba(16, 185, 129, 0.18);
         }}
         .stTextInput > div > div > input, .stNumberInput > div > div > input, .stSelectbox > div > div > select {{
-            border-radius: 10px !important; border: 1px solid #dbe3ef !important; padding: 10px 12px !important;
+            border-radius: 8px !important; border: 1px solid #dbe3ef !important; padding: 9px 10px !important; font-size: 13px !important;
         }}
-        .stDataFrame {{ border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }}
+        .stDataFrame {{ border-radius: 10px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.05); }}
         .card {{
-            background: white; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 3px 12px rgba(0,0,0,0.04);
         }}
-        .stAlert {{ border-radius: 12px; }}
+        .stAlert {{ border-radius: 10px; font-size: 13px; }}
+        hr {{ border: none; border-top: 1px solid #e2e8f0; margin: 0.8rem 0; }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+# Header section
+st.markdown("# 🍎 FoodWise")
 
 if "menu" not in st.session_state:
     st.session_state.menu = "Dashboard"
@@ -107,7 +110,6 @@ st.markdown("---")
 menu = st.session_state.menu
 
 # Helper function for status display
-
 def get_status_label(expiry_date):
     status = calculate_status(expiry_date)
     if status == ExpiryStatus.AVAILABLE:
@@ -175,7 +177,7 @@ if menu == "Dashboard":
             labels = ["Available", "Expiring Soon", "Expired"]
             values = [available_count, expiring_soon_count, expired_count]
             fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.5, marker=dict(colors=["#10b981", "#f59e0b", "#ef4444"]))])
-            fig.update_layout(height=340, margin=dict(l=10, r=10, t=20, b=20), paper_bgcolor="rgba(0,0,0,0)")
+            fig.update_layout(height=320, margin=dict(l=10, r=10, t=20, b=20), paper_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig, use_container_width=True)
 
     with insight_col:
@@ -196,11 +198,11 @@ if menu == "Dashboard":
         st.write("")
 
         if expired_count > 0:
-            st.error(f"🔴 {expired_count} item(s) have expired.")
+            st.error(f"🔴 {expired_count} item(s) expired")
         elif expiring_soon_count > 0:
-            st.warning(f"🟠 {expiring_soon_count} item(s) are expiring soon.")
+            st.warning(f"🟠 {expiring_soon_count} expiring soon")
         else:
-            st.success("✅ No urgent items found.")
+            st.success("✅ All good!")
 
     st.write("")
 
