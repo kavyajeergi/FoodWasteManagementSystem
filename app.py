@@ -430,7 +430,7 @@ elif menu == "Inventory Summary":
         item_actions = []
         for item in items:
             actions = get_item_actions(item[1])
-            item_actions.extend([(action[0], action[1], action[2)] for action in actions])
+            item_actions.extend([(action[0], action[1], action[2]) for action in actions])
         if item_actions:
             df_actions = pd.DataFrame(item_actions, columns=["Item Name", "Action", "Action Date"])
             st.dataframe(df_actions, use_container_width=True, hide_index=True)
