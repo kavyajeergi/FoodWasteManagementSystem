@@ -1,62 +1,78 @@
-**Streamlit link: [https://foodwastemanagementsystem-gleykwdz2rnyrmu6m4nx9f.streamlit.app/#food-inventory](https://foodwastemanagementsystem-gleykwdz2rnyrmu6m4nx9f.streamlit.app/#food-inventory)**
+# 🍎 FoodWise
 
-# 🍎 Food Waste Management System
+A modern, visually polished Food Waste Management System built with Python, Streamlit, SQLite, and Plotly.
 
-A simple and user-friendly **Food Waste Management System** built with **Python, Streamlit, and SQLite**.
+The app helps users track food inventory, identify items nearing expiry, monitor waste and donations, and keep an overview of the full food lifecycle in a clean dashboard-based UI.
 
-The application helps users manage food inventory, monitor expiry dates, and track food items that are either **donated** or marked as **waste**. It also provides a colorful dashboard to give a quick overview of the food inventory and waste status.
-
----
-
-## 📌 Project Overview
-
-Food wastage is a common problem caused by poor inventory tracking and expired food items.
-
-This application provides a simple solution to:
-
-* Add and manage food items
-* Track food quantity and expiry dates
-* Monitor items that are expiring soon
-* Identify expired food
-* Mark food as waste or donation
-* Search food items
-* Update food quantities
-* Remove food items
-* View inventory statistics
-* Track waste and donation history
-* View everything through a dashboard
+**Live app:** [https://foodwastemanagementsystem-gleykwdz2rnyrmu6m4nx9f.streamlit.app/#food-inventory](https://foodwastemanagementsystem-gleykwdz2rnyrmu6m4nx9f.streamlit.app/#food-inventory)
 
 ---
 
-## ✨ Features
+## Overview
 
-### 📊 Dashboard
+Food waste is a growing problem caused by poor tracking, inaccurate stock levels, and missed expiry dates. FoodWise provides a simple and practical solution for:
 
-The dashboard provides a quick overview of the inventory:
-
-* 📦 Total Food Items
-* ⚖️ Total Quantity
-* 🟢 Available Items
-* 🟠 Expiring Soon
-* 🔴 Expired Items
-* ♻️ Food Waste
-* 🎁 Food Donations
-* 📈 Inventory Status Chart
-* 💡 Quick Summary and Alerts
+- Managing food inventory
+- Tracking quantities and expiry dates
+- Detecting items that are expiring soon or already expired
+- Marking items as waste or donation
+- Searching records by item name or category
+- Updating stock levels quickly
+- Monitoring inventory trends through a dashboard
 
 ---
 
-### ➕ Add Food Item
+## New UI Experience
 
-Users can add food items with information such as:
+The application now uses a modern Streamlit layout with:
 
-* Item ID
-* Food Name
-* Category
-* Quantity
-* Unit
-* Purchase Date
-* Expiry Date
+- A top navigation bar with quick access to all major actions
+- Metric cards for important inventory insights
+- Clean card-based UI styling
+- Progress indicators and visual charts
+- A dashboard-first workflow for everyday inventory monitoring
+- Organized sections for:
+  - Dashboard
+  - Add Food Item
+  - Update Quantity
+  - Remove Item
+  - Inventory
+  - Search Item
+  - Expiry Monitor
+  - Waste / Donation
+  - Inventory Summary
+
+---
+
+## Features
+
+### Dashboard
+
+The dashboard gives a quick overview of the current food inventory and operational health.
+
+It includes:
+
+- Total Food Items
+- Total Quantity
+- Available Items
+- Expiring Soon
+- Expired Items
+- Waste records
+- Donation records
+- Inventory health chart
+- Quick summary alerts
+
+### Add Food Item
+
+Users can add food items with:
+
+- Item ID
+- Food name
+- Category
+- Quantity
+- Unit
+- Purchase date
+- Expiry date
 
 Example:
 
@@ -65,39 +81,40 @@ ID: F001
 Name: Milk
 Category: Dairy
 Quantity: 2
-Unit: Litres
+Unit: litres
 Purchase Date: 2026-10-01
 Expiry Date: 2026-10-07
 ```
 
----
+### Inventory View
 
-### 📦 View Inventory
+The inventory section displays all items in a table with details such as:
 
-Users can view all available food items in a table.
+- ID
+- Name
+- Category
+- Quantity
+- Unit
+- Purchase Date
+- Expiry Date
+- Status
 
-The inventory contains:
+Items are automatically labeled as:
 
-| Field         | Description              |
-| ------------- | ------------------------ |
-| ID            | Unique food item ID      |
-| Name          | Food name                |
-| Category      | Food category            |
-| Quantity      | Available quantity       |
-| Unit          | Kg, litres, pieces, etc. |
-| Purchase Date | Date of purchase         |
-| Expiry Date   | Expiration date          |
+```text
+🟢 Available
+🟠 Expiring Soon
+🔴 Expired
+```
 
----
+### Search Functionality
 
-### 🔍 Search Food Items
+Users can search records by:
 
-Food items can be searched using:
+- Food name
+- Food category
 
-* Food name
-* Food category
-
-For example:
+Example:
 
 ```text
 Search: Milk
@@ -109,174 +126,119 @@ or
 Search: Dairy
 ```
 
----
+### Update Quantity
 
-### ✏️ Update Quantity
+The quantity can be updated for an existing food item.
 
-Users can increase or decrease the quantity of an existing food item.
+### Remove Item
 
-Example:
+Items can be deleted from inventory using their unique item ID.
 
-```text
-Milk
-Current Quantity: 5 litres
+### Expiry Monitor
 
-Operation: Decrease
-Amount: 2
+The app automatically calculates food status based on remaining days before expiry.
 
-New Quantity: 3 litres
-```
+An item is marked as expiring soon when it has 3 days or fewer remaining.
 
----
+The expiry monitor is organized into tabs:
 
-### 🗑️ Remove Food Item
+- Expiring Soon
+- Expired
+- Available
 
-Food items can be removed from the inventory using their unique Item ID.
+### Waste / Donation Management
 
----
+Users can mark any item as either:
 
-### ⏰ Expiry Monitor
+- Waste
+- Donation
 
-The application automatically calculates the status of food items based on the expiry date.
+These records are stored with:
 
-There are three statuses:
+- Item name
+- Action type
+- Action date
 
-```text
-🟢 AVAILABLE
-🟠 EXPIRING SOON
-🔴 EXPIRED
-```
+### Inventory Summary
 
-The application considers an item **Expiring Soon** when it has 3 days or less remaining.
+The summary section provides insights into:
 
----
-
-### ♻️ Waste / Donation Management
-
-Users can mark food items as:
-
-```text
-♻️ WASTE
-🎁 DONATION
-```
-
-The application stores:
-
-* Food item name
-* Action
-* Action date
-
-Example:
-
-```text
-Milk → DONATION → 2026-10-05
-Bread → WASTE → 2026-10-05
-```
+- Total inventory size
+- Total quantity
+- Item count by category
+- Waste and donation history
 
 ---
 
-### 📈 Inventory Summary
-
-The application provides a summary of:
-
-* Total inventory
-* Total quantity
-* Waste history
-* Donation history
-
-This helps users understand how much food is being used, donated, or wasted.
-
----
-
-# 🏗️ Project Architecture
-
-The project follows a simple separation of responsibilities.
+## Project Structure
 
 ```text
 FoodWasteManagementSystem
-│
 ├── app.py
-│
+├── README.md
 ├── Models
 │   └── foodmodel.py
-│
 ├── ViewModels
 │   ├── database.py
 │   ├── inventory.py
 │   └── validation.py
-│
-├── database
-│   └── foodwaste.db
-│
-└── README.md
+├── food_inventory.db
+└── .streamlit/
 ```
 
-### `app.py`
+### app.py
+
+Main Streamlit application containing:
+
+- UI layout and styling
+- Navigation between sections
+- Dashboard logic
+- Inventory actions
+- Charts and metrics
+
+### Models/foodmodel.py
+
+Contains data models used by the app, including `FoodItem`.
+
+### ViewModels/inventory.py
+
+Contains business logic for:
+
+- Adding items
+- Reading inventory
+- Searching by name/category
+- Updating quantities
+- Deleting items
+- Calculating expiry status
+- Saving waste/donation actions
+- Fetching action history
+
+### ViewModels/database.py
 
 Responsible for:
 
-* Streamlit UI
-* Navigation
-* User input
-* Displaying tables
-* Dashboard
-* Calling ViewModel functions
+- SQLite database connection
+- Table creation
+- Data persistence
 
-### `Models/foodmodel.py`
+### ViewModels/validation.py
 
-Contains data models such as:
+Validates:
 
-```text
-FoodItem
-```
-
-This represents a food item in the system.
-
-### `ViewModels/inventory.py`
-
-Contains business logic such as:
-
-* Add food item
-* Get inventory
-* Search items
-* Update quantity
-* Delete item
-* Calculate expiry status
-* Save waste/donation actions
-* Retrieve action history
-
-### `ViewModels/database.py`
-
-Responsible for:
-
-* SQLite database connection
-* Creating database tables
-* Database configuration
-
-### `ViewModels/validation.py`
-
-Responsible for validating:
-
-* Dates
-* Quantity
-* Expiry dates
-* User input
+- Dates
+- Quantity values
+- Expiry date rules
+- User inputs
 
 ---
 
-# 🗄️ Database
+## Database
 
-The application uses **SQLite** as the database.
+The app uses SQLite for local data storage.
 
-### Food Items Table
+### food_items table
 
-The main table stores:
-
-```text
-food_items
-```
-
-with fields such as:
+Stores item-level information such as:
 
 ```text
 id
@@ -288,15 +250,9 @@ purchase_date
 expiry_date
 ```
 
-### Item Actions Table
+### item_actions table
 
-Waste and donation actions are stored in:
-
-```text
-item_actions
-```
-
-with:
+Stores waste and donation actions:
 
 ```text
 id
@@ -307,72 +263,55 @@ action_date
 
 ---
 
-# 🛠️ Technologies Used
+## Technologies Used
 
-| Technology | Purpose                  |
-| ---------- | ------------------------ |
-| Python     | Application development  |
-| Streamlit  | Web UI                   |
-| SQLite     | Database                 |
-| Pandas     | Data handling and tables |
-| Git        | Version control          |
-| VS Code    | Development environment  |
+- Python
+- Streamlit
+- SQLite
+- Pandas
+- Plotly
+- Git
+- VS Code
 
 ---
 
-# 🚀 Installation
+## Installation
 
-## 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone <your-github-repository-url>
 ```
 
-Move into the project directory:
+Go into the project directory:
 
 ```bash
 cd FoodWasteManagementSystem
 ```
 
----
+### 2. Create a virtual environment
 
-## 2. Create a Virtual Environment
-
-### macOS / Linux
+macOS / Linux:
 
 ```bash
 python3 -m venv venv
-```
-
-Activate it:
-
-```bash
 source venv/bin/activate
 ```
 
-### Windows
+Windows:
 
 ```bash
 python -m venv venv
-```
-
-Activate:
-
-```bash
 venv\Scripts\activate
 ```
 
----
-
-## 3. Install Dependencies
+### 3. Install dependencies
 
 ```bash
-pip install streamlit pandas
+pip install streamlit pandas plotly
 ```
 
----
-
-## 4. Run the Application
+### 4. Run the app
 
 ```bash
 streamlit run app.py
@@ -382,77 +321,46 @@ The application will open in your browser.
 
 ---
 
-# 🖥️ Application Flow
+## App Flow
 
 ```text
-                ┌─────────────────────┐
-                │       Dashboard     │
-                └──────────┬──────────┘
-                           │
-          ┌────────────────┼────────────────┐
-          │                │                │
-          ▼                ▼                ▼
-     Add Food Item    View Inventory    Search Item
-          │                │                │
-          └────────────────┼────────────────┘
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │ Expiry Monitor  │
-                  └────────┬────────┘
-                           │
-                 ┌─────────┴─────────┐
-                 ▼                   ▼
-             Donation              Waste
-                 │                   │
-                 └─────────┬─────────┘
-                           ▼
-                  Inventory Summary
+Dashboard
+  ├── Add Food Item
+  ├── Update Quantity
+  ├── Remove Item
+  ├── View Inventory
+  ├── Search Item
+  ├── Expiry Monitor
+  ├── Waste / Donation
+  └── Inventory Summary
 ```
 
 ---
 
-# 🎯 Future Enhancements
+## Future Enhancements
 
-The project can be extended with:
+The app can be extended with:
 
-* 🔐 User authentication
-* 👥 Multiple users
-* 📧 Expiry notifications
-* 📱 Mobile application
-* ☁️ Cloud database
-* 📊 Advanced analytics
-* 📈 Monthly waste reports
-* 🎁 Donation organization management
-* 🏷️ Barcode/QR code scanning
-* 🤖 AI-based food waste prediction
-* 📷 Food image recognition
-* 📉 Waste reduction recommendations
-
----
-
-# 💡 Future AI Enhancement
-
-An AI-based recommendation system could predict which food items are likely to expire soon and recommend actions.
-
-For example:
-
-```text
-⚠️ Milk expires in 2 days.
-
-Recommendation:
-Consider consuming or donating this item
-before the expiry date to reduce food waste.
-```
+- User authentication
+- Multi-user support
+- Email/notification alerts for expiring items
+- Mobile app support
+- Cloud database integration
+- Advanced analytics and reporting
+- Monthly waste insights
+- Donation coordination features
+- Barcode or QR code scanning
+- AI-based expiry prediction
+- Computer vision-based food recognition
 
 ---
 
-# 🤝 Contributing
+## Contributing
 
 Contributions are welcome.
 
 1. Fork the repository
-2. Create a new branch
+2. Create a feature branch
 
 ```bash
 git checkout -b feature/new-feature
@@ -465,30 +373,30 @@ git checkout -b feature/new-feature
 git commit -m "Add new feature"
 ```
 
-5. Push the branch
+5. Push to your branch
 
 ```bash
 git push origin feature/new-feature
 ```
 
-6. Create a Pull Request
+6. Open a Pull Request
 
 ---
 
-# 📄 License
+## License
 
-This project is created for learning and demonstration purposes.
+This project is created for learning, demonstration, and practical inventory management use.
 
 ---
 
-## 👩‍💻 Author
+## Author
 
 **Kavya Jeergi**
 
-Food Waste Management System built using Python, Streamlit, and SQLite.
+FoodWise is designed to help users reduce food waste by improving tracking, visibility, and action-taking around food inventory.
 
 ---
 
-## ⭐ Project Goal
+## Project Goal
 
-> **Reduce food waste by helping users track, manage, and take timely action on their food inventory.**
+> Reduce food waste by helping users track, monitor, and take timely action on their food inventory.
